@@ -1,45 +1,40 @@
 import numpy as np
-from scipy import stats
+import pandas as pd
+
 
 class ModelEvaluation:
-    def __init__(self, X, y, theta):
-        """
-        Инициализация класса для оценки значимости модели.
-
-        :param X: Матрица признаков (numpy array).
-        :param y: Целевая переменная (numpy array).
-        :param theta: Вектор коэффициентов регрессии (numpy array).
-        """
-        self.X = np.c_[np.ones((X.shape[0], 1)), X]  # Добавляем столбец единиц для свободного члена
+    def __init__(self, X: pd.DataFrame, y: pd.DataFrame, y_pred: pd.DataFrame):
+        self.X = X
         self.y = y
-        self.theta = theta
-        self.n = len(y)                             # Количество наблюдений
-        self.k = self.X.shape[1]                    # Количество параметров (включая свободный член)
-        self.y_pred = self.X @ theta                # Предсказанные значения
-        self.residuals = y - self.y_pred            # Остатки
+        self.y_pred = y_pred
+
+    def wape(self):
+        """Вычисление WAPE (Weighted Absolute Percentage Error)."""
+        return (abs(self.y - self.y_pred).sum() / self.y.sum()).mean()
+
+    def ar(self):
+        """Вычисление AR (Accuracy Ratio)."""
+        return (1 - abs(self.y - self.y_pred) / self.y).mean().mean()
 
     def r_squared(self):
-        """Вычисляет коэффициент детерминации R²."""
-        ss_total = np.sum((self.y - np.mean(self.y)) ** 2)
-        ss_residual = np.sum(self.residuals ** 2)
+        """Коэффициент детерминации R²."""
+        ss_total = ((self.y - self.y.mean()) ** 2).sum()
+        ss_residual = ((self.y - self.y_pred) ** 2).sum()
         return 1 - (ss_residual / ss_total)
 
     def standard_error(self):
-        """Вычисляет стандартную ошибку коэффициентов."""
-        mse = np.sum(self.residuals ** 2) / (self.n - self.k)  # Среднеквадратичная ошибка
-        var_matrix = mse * np.linalg.pinv(self.X.T @ self.X)  # Ковариационная матрица
-        return np.sqrt(np.diag(var_matrix))  # Корень из диагональных элементов
+        """Вычисление стандартной ошибки коэффициентов регрессии."""
+        residuals = self.y - self.y_pred
+        mse = (residuals ** 2).sum() / (len(self.y) - len(self.X.columns) - 1)
+        X_with_intercept = pd.concat([pd.Series(1, index=self.X.index, name="Intercept"), self.X], axis=1)
+        cov_matrix = np.linalg.inv(X_with_intercept.T @ X_with_intercept) * mse.mean()
+        return np.sqrt(np.diag(cov_matrix))
 
     def f_statistic(self):
-        """Вычисляет F-статистику для значимости модели."""
-        ss_total = np.sum((self.y - np.mean(self.y)) ** 2)
-        ss_residual = np.sum(self.residuals ** 2)
-        ss_explained = ss_total - ss_residual
-
-        ms_explained = ss_explained / (self.k - 1)  # Средний квадрат объяснённой дисперсии
-        ms_residual = ss_residual / (self.n - self.k)  # Средний квадрат ошибки
-
-        f_value = ms_explained / ms_residual
-        p_value = 1 - stats.f.cdf(f_value, self.k - 1, self.n - self.k)  # p-значение F-теста
-
-        return f_value, p_value
+        """Вычисление F-статистики для модели."""
+        ss_total = ((self.y - self.y.mean()) ** 2).sum()
+        ss_regression = ((self.y_pred - self.y.mean()) ** 2).sum()
+        k = len(self.X.columns)  # Число предикторов
+        n = len(self.y)  # Число наблюдений
+        f_stat = (ss_regression / k) / ((ss_total - ss_regression) / (n - k - 1))
+        return f_stat.mean()

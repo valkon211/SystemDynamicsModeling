@@ -1,51 +1,54 @@
 import numpy as np
 import pandas as pd
+from pandas.core.interchange.dataframe_protocol import DataFrame
+
+from RegressionModels.MultRegressionType import MultRegressionType
+
 
 class RegressionPredictor:
-    def __init__(self, model_type, coefficients):
-        """
-        Инициализация предсказателя.
-
-        :param model_type: Тип уравнения ('linear', 'polynomial', 'exponential', 'quadratic').
-        :param coefficients: Список коэффициентов уравнения.
-        """
-        self.model_type = model_type
-        self.coefficients = np.array(coefficients)
-
-    def predict(self, X: pd.DataFrame):
+    def predict(self, X: pd.DataFrame, model_type: MultRegressionType, coefficients):
         """
         Метод предсказания значений на основе входных данных и типа модели.
 
+        :param coefficients:
+        :param model_type:
         :param X: DataFrame с фактами.
         :return: Предсказанные значения в виде массива numpy.
         """
         X = X.to_numpy()  # Преобразуем DataFrame в numpy array
-        if self.model_type == "linear":
-            return self._predict_linear(X)
-        elif self.model_type == "polynomial":
-            return self._predict_polynomial(X)
-        elif self.model_type == "exponential":
-            return self._predict_exponential(X)
-        elif self.model_type == "quadratic":
-            return self._predict_quadratic(X)
+        if model_type == MultRegressionType.Linear:
+            y_pred = self._predict_linear(X, coefficients)
+        elif model_type == MultRegressionType.Polynomial:
+            y_pred = self._predict_polynomial(X, coefficients)
+        elif model_type == MultRegressionType.Exponential:
+            y_pred = self._predict_exponential(X, coefficients)
+        elif model_type == MultRegressionType.Quadratic:
+            y_pred = self._predict_quadratic(X, coefficients)
         else:
-            raise ValueError(f"Неизвестный тип модели: {self.model_type}")
+            raise ValueError(f"Неизвестный тип модели: {model_type}")
 
-    def _predict_linear(self, X):
+        if y_pred.ndim == 1:
+            y_pred = y_pred.reshape(-1, 1)
+
+        # Создаём DataFrame с нужными названиями колонок
+        column_names = [f"y {i + 1}" for i in range(y_pred.shape[1])]
+        return pd.DataFrame(y_pred, columns=column_names)
+
+    def _predict_linear(self, X, coefficients):
         """Предсказание для линейной регрессии: y = b0 + b1*x1 + b2*x2 + ..."""
         X = np.c_[np.ones((X.shape[0], 1)), X]  # Добавляем единичный столбец для свободного члена
-        return X @ self.coefficients
+        return X @ coefficients
 
-    def _predict_polynomial(self, X):
+    def _predict_polynomial(self, X, coefficients):
         """Предсказание для полиномиальной регрессии (2-й степени): y = b0 + b1*x + b2*x^2."""
         X_poly = np.c_[np.ones((X.shape[0], 1)), X, X**2]
-        return X_poly @ self.coefficients
+        return X_poly @ coefficients
 
-    def _predict_exponential(self, X):
+    def _predict_exponential(self, X, coefficients):
         """Предсказание для экспоненциальной регрессии: y = b0 * exp(b1*x)."""
-        return self.coefficients[0] * np.exp(self.coefficients[1] * X)
+        return coefficients[0] * np.exp(coefficients[1] * X)
 
-    def _predict_quadratic(self, X):
+    def _predict_quadratic(self, X, coefficients):
         """Предсказание для квадратичной регрессии: y = b0 + b1*x + b2*x^2."""
         X_quad = np.c_[np.ones((X.shape[0], 1)), X, X**2]
-        return X_quad @ self.coefficients
+        return X_quad @ coefficients

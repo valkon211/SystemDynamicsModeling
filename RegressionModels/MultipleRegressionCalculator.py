@@ -1,49 +1,39 @@
 import numpy as np
 
 class MultipleRegressionCalculator:
-    def __init__(self, X, y):
-        """
-        Инициализация класса для вычисления коэффициентов множественной регрессии.
-
-        :param X: Матрица признаков (numpy array).
-        :param y: Целевая переменная (numpy array).
-        """
-        self.X = X
-        self.y = y
-
-    def linear_regression(self):
+    def linear_regression(self, X, y):
         """Вычисляет коэффициенты линейной регрессии."""
-        X_b = np.c_[np.ones((self.X.shape[0], 1)), self.X]  # Добавляем столбец единиц для свободного коэффициента
-        theta = np.linalg.pinv(X_b.T @ X_b) @ X_b.T @ self.y
+        X_b = np.c_[np.ones((X.shape[0], 1)), X]  # Добавляем столбец единиц для свободного коэффициента
+        theta = np.linalg.pinv(X_b.T @ X_b) @ X_b.T @ y
         return theta
 
-    def polynomial_regression(self, degree):
+    def polynomial_regression(self, X, y, degree = 2):
         """Вычисляет коэффициенты полиномиальной регрессии указанной степени."""
-        X_poly = self._polynomial_features(self.X, degree)
-        return self._compute_coefficients(X_poly, self.y)
+        X_poly = self._polynomial_features(X, degree)
+        return self._compute_coefficients(X_poly, y)
 
-    def exponential_regression(self):
+    def exponential_regression(self, X, y):
         """Вычисляет коэффициенты экспоненциальной регрессии."""
-        y_log = np.log(self.y)
-        theta = self.linear_regression()
+        y_log = np.log(y)
+        theta = self.linear_regression(X, y_log)
         return theta, np.exp(theta[0])  # Возвращаем коэффициенты и пересчитанное значение свободного члена
 
-    def quadratic_regression(self):
+    def quadratic_regression(self, X, y):
         """Вычисляет коэффициенты квадратичной регрессии."""
-        return self.polynomial_regression(2)
+        return self.polynomial_regression(X, y, 2)
 
-    def check_linearity(self):
+    def check_linearity(self, X, y):
         """
         Проверяет, является ли зависимость между X и y линейной.
         Метод: Сравнение ошибки аппроксимации линейной и нелинейных моделей.
         """
-        theta_linear = self.linear_regression()
-        y_pred = np.c_[np.ones((self.X.shape[0], 1)), self.X] @ theta_linear
-        error_linear = np.sum((self.y - y_pred) ** 2)
+        theta_linear = self.linear_regression(X, y)
+        y_pred = np.c_[np.ones((X.shape[0], 1)), X] @ theta_linear
+        error_linear = np.sum((y - y_pred) ** 2)
 
-        theta_quad = self.quadratic_regression()
-        y_pred_quad = self._polynomial_features(self.X, 2) @ theta_quad
-        error_quad = np.sum((self.y - y_pred_quad) ** 2)
+        theta_quad = self.quadratic_regression(X, y)
+        y_pred_quad = self._polynomial_features(X, 2) @ theta_quad
+        error_quad = np.sum((y - y_pred_quad) ** 2)
 
         return error_linear <= error_quad  # Если ошибка линейной модели меньше или равна квадратичной, считаем зависимость линейной
 

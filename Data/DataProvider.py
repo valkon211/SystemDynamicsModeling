@@ -6,8 +6,10 @@ class DataProvider:
     def __init__(self, facts_path, targets_path):
         self.facts_path = facts_path
         self.targets_path = targets_path
+        # DataFrame
         self.facts = None
         self.targets = None
+        # numpy массивы
         self.X = None
         self.y = None
 
@@ -45,10 +47,10 @@ class DataProvider:
         else:
             raise ValueError("Формат файла не поддерживается. Используйте CSV или Excel.")
 
-    def get_features(self):
+    def get_features_array(self):
         return self.X
 
-    def get_targets(self):
+    def get_targets_array(self):
         return self.y
 
     def get_facts_df(self):
