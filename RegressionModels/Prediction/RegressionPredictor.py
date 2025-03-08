@@ -6,16 +6,12 @@ from RegressionModels.MultRegressionType import MultRegressionType
 
 
 class RegressionPredictor:
-    def predict(self, X: pd.DataFrame, model_type: MultRegressionType, coefficients):
-        """
-        Метод предсказания значений на основе входных данных и типа модели.
-
-        :param coefficients:
-        :param model_type:
-        :param X: DataFrame с фактами.
-        :return: Предсказанные значения в виде массива numpy.
-        """
+    def predict(self, X: pd.DataFrame, model_type: MultRegressionType, coefficients: np.ndarray):
         X = X.to_numpy()  # Преобразуем DataFrame в numpy array
+
+        if X.shape[1] + 1 == coefficients.shape[0]:
+            X = np.hstack([np.ones((X.shape[0], 1)), X])
+
         if model_type == MultRegressionType.Linear:
             y_pred = self._predict_linear(X, coefficients)
         elif model_type == MultRegressionType.Polynomial:
@@ -36,8 +32,11 @@ class RegressionPredictor:
 
     def _predict_linear(self, X, coefficients):
         """Предсказание для линейной регрессии: y = b0 + b1*x1 + b2*x2 + ..."""
-        X = np.c_[np.ones((X.shape[0], 1)), X]  # Добавляем единичный столбец для свободного члена
-        return X @ coefficients
+        y_pred = X @ coefficients  # X * theta
+
+        # Создаём DataFrame с корректными заголовками колонок
+        column_names = [f"y {i + 1}" for i in range(y_pred.shape[1] if y_pred.ndim > 1 else 1)]
+        return pd.DataFrame(y_pred, columns=column_names)
 
     def _predict_polynomial(self, X, coefficients):
         """Предсказание для полиномиальной регрессии (2-й степени): y = b0 + b1*x + b2*x^2."""
@@ -46,7 +45,12 @@ class RegressionPredictor:
 
     def _predict_exponential(self, X, coefficients):
         """Предсказание для экспоненциальной регрессии: y = b0 * exp(b1*x)."""
-        return coefficients[0] * np.exp(coefficients[1] * X)
+        linear_combination = X @ coefficients
+        y_pred = np.exp(linear_combination)
+
+        # Создаём DataFrame с корректными заголовками колонок
+        column_names = [f"y {i + 1}" for i in range(y_pred.shape[1] if y_pred.ndim > 1 else 1)]
+        return pd.DataFrame(y_pred, columns=column_names)
 
     def _predict_quadratic(self, X, coefficients):
         """Предсказание для квадратичной регрессии: y = b0 + b1*x + b2*x^2."""
