@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.metrics import roc_auc_score, r2_score
 
 
 class ModelEvaluation:
@@ -8,19 +9,46 @@ class ModelEvaluation:
         self.y = y
         self.y_pred = y_pred
 
-    def wape(self):
+    def wape(self) -> pd.DataFrame:
         """Вычисление WAPE (Weighted Absolute Percentage Error)."""
-        return (abs(self.y - self.y_pred).sum() / self.y.sum()).mean()
+        absolute_errors = abs(self.y - self.y_pred)
+        sum_absolute_errors = absolute_errors.sum()
+        sum_actual_values = abs(self.y).sum()
+        wape_values = sum_absolute_errors / sum_actual_values
 
-    def ar(self):
+        return pd.DataFrame(wape_values, columns=["WAPE"])
+
+    def ar(self) -> pd.DataFrame:
         """Вычисление AR (Accuracy Ratio)."""
-        return (1 - abs(self.y - self.y_pred) / self.y).mean().mean()
+        if self.y.shape != self.y_pred.shape:
+            raise ValueError("Размерности y и y_pred должны совпадать!")
+
+        ar_values = {}
+
+        for col in self.y.columns:
+            # Вычисляем AUC
+            auc = roc_auc_score(self.y[col], self.y_pred[col])
+
+            # Gini Coefficient
+            gini_model = 2 * auc - 1
+
+            # Accuracy Ratio
+            ar_values[col] = round(gini_model / 1, 4)  # Деление на G_perfect = 1
+
+        # Создаём DataFrame
+        ar_df = pd.DataFrame(ar_values, columns=["AR"])
+
+        return ar_df
 
     def r_squared(self):
         """Коэффициент детерминации R²."""
-        ss_total = ((self.y - self.y.mean()) ** 2).sum()
-        ss_residual = ((self.y - self.y_pred) ** 2).sum()
-        return 1 - (ss_residual / ss_total)
+        # Проверка размерностей
+        if self.y.shape != self.y_pred.shape:
+            raise ValueError("Размерности y и y_pred должны совпадать!")
+
+        r2_values = {col: round(r2_score(self.y[col], self.y_pred[col]), 4) for col in self.y.columns}
+
+        return pd.DataFrame(r2_values)
 
     def standard_error(self):
         """Вычисление стандартной ошибки коэффициентов регрессии."""

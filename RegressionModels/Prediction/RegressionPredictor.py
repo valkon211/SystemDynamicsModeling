@@ -27,7 +27,7 @@ class RegressionPredictor:
             y_pred = y_pred.reshape(-1, 1)
 
         # Создаём DataFrame с нужными названиями колонок
-        column_names = [f"y {i + 1}" for i in range(y_pred.shape[1])]
+        column_names = [f"y{i + 1}" for i in range(y_pred.shape[1])]
         return pd.DataFrame(y_pred, columns=column_names)
 
     def _predict_linear(self, X, coefficients):
@@ -35,7 +35,7 @@ class RegressionPredictor:
         y_pred = X @ coefficients  # X * theta
 
         # Создаём DataFrame с корректными заголовками колонок
-        column_names = [f"y {i + 1}" for i in range(y_pred.shape[1] if y_pred.ndim > 1 else 1)]
+        column_names = [f"y{i + 1}" for i in range(y_pred.shape[1] if y_pred.ndim > 1 else 1)]
         return pd.DataFrame(y_pred, columns=column_names)
 
     def _predict_polynomial(self, X, coefficients):
@@ -49,7 +49,7 @@ class RegressionPredictor:
         y_pred = np.exp(linear_combination)
 
         # Создаём DataFrame с корректными заголовками колонок
-        column_names = [f"y {i + 1}" for i in range(y_pred.shape[1] if y_pred.ndim > 1 else 1)]
+        column_names = [f"y{i + 1}" for i in range(y_pred.shape[1] if y_pred.ndim > 1 else 1)]
         return pd.DataFrame(y_pred, columns=column_names)
 
     def _predict_quadratic(self, X, coefficients):

@@ -8,8 +8,8 @@ from RegressionModels.Prediction.RegressionPredictor import RegressionPredictor
 
 def main():
     # Считываем пути до файлов с таблицами фактов и целевых показателей
-    facts_path = input("Введите путь к файлу с таблицей фактов: ")
-    targets_path = input("Введите путь к файлу с таблицей целевых показателей: ")
+    facts_path = "facts.xls" #input("Введите путь к файлу с таблицей фактов: ")
+    targets_path = "targets.xls" #input("Введите путь к файлу с таблицей целевых показателей: ")
 
     # Загружаем данные
     data_provider = DataProvider(facts_path, targets_path)
@@ -35,16 +35,17 @@ def main():
     predictor = RegressionPredictor()
 
     for model_type, coefficients in models.items():
-        print(f"\nОценка модели {model_type}:")
+        print(f"\nПредсказание модели {model_type}:")
 
         # Предсказанные значения
         predicted_values = predictor.predict(facts_df, model_type, coefficients)
         print(predicted_values)
 
+        print(f"\nОценка модели {model_type}:")
         # Вычисляем метрики
         evaluator = ModelEvaluation(facts_df, targets_df, predicted_values)
 
-        ar = evaluator.ar()
+        #ar = evaluator.ar()
         wape = evaluator.wape()
         r_squared = evaluator.r_squared()
         std_error = evaluator.standard_error()
@@ -52,8 +53,8 @@ def main():
 
         # Вывод результатов
 
-        print(f"AR: {ar}")
-        print(f"WAPE: {wape}")
+        #print(ar)
+        print(wape)
         print(f"Коэффициент детерминации R²: {r_squared}")
         print(f"Стандартная ошибка коэффициентов: {std_error}")
         print(f"F-статистика: {f_stat}")

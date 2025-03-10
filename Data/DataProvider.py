@@ -27,6 +27,9 @@ class DataProvider:
             if not is_valid:
                 raise Exception(message)
 
+            facts.columns = [f"x{i + 1}" for i in range(facts.shape[1])]
+            targets.columns = [f"y{i + 1}" for i in range(targets.shape[1])]
+
             self.facts = facts
             self.targets = targets
 
