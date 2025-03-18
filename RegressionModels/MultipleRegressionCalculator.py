@@ -1,49 +1,56 @@
+from itertools import combinations_with_replacement
+
 import numpy as np
+import pandas as pd
+
+from RegressionModels.MultRegressionType import MultRegressionType
+
 
 class MultipleRegressionCalculator:
-    def linear_regression(self, X, y):
-        """Вычисляет коэффициенты линейной регрессии."""
-        X_b = np.c_[np.ones((X.shape[0], 1)), X]  # Добавляем столбец единиц для свободного коэффициента
-        theta = np.linalg.pinv(X_b.T @ X_b) @ X_b.T @ y
+    def __init__(self, X: pd.DataFrame, y: pd.DataFrame):
+        self.X = X
+        self.y = y
+
+    def get_theta(self, model_type: MultRegressionType):
+        if model_type == MultRegressionType.Linear:
+            theta = self._fit_linear()
+        elif model_type == MultRegressionType.Polynomial:
+            theta = self._fit_polynomial()
+        elif model_type == MultRegressionType.Exponential:
+            theta = self._fit_exponential()
+        elif model_type == MultRegressionType.Quadratic:
+            theta = self._fit_quadratic()
+        else:
+            raise ValueError(f"Неизвестный тип модели: {model_type}")
+
         return theta
 
-    def polynomial_regression(self, X, y, degree = 2):
-        """Вычисляет коэффициенты полиномиальной регрессии указанной степени."""
-        X_poly = self._polynomial_features(X, degree)
-        return self._compute_coefficients(X_poly, y)
-
-    def exponential_regression(self, X, y):
-        """Вычисляет коэффициенты экспоненциальной регрессии."""
-        y_log = np.log(y)
-        theta = self.linear_regression(X, y_log)
-        return theta, np.exp(theta[0])  # Возвращаем коэффициенты и пересчитанное значение свободного члена
-
-    def quadratic_regression(self, X, y):
-        """Вычисляет коэффициенты квадратичной регрессии."""
-        return self.polynomial_regression(X, y, 2)
-
-    def check_linearity(self, X, y):
-        """
-        Проверяет, является ли зависимость между X и y линейной.
-        Метод: Сравнение ошибки аппроксимации линейной и нелинейных моделей.
-        """
-        theta_linear = self.linear_regression(X, y)
-        y_pred = np.c_[np.ones((X.shape[0], 1)), X] @ theta_linear
-        error_linear = np.sum((y - y_pred) ** 2)
-
-        theta_quad = self.quadratic_regression(X, y)
-        y_pred_quad = self._polynomial_features(X, 2) @ theta_quad
-        error_quad = np.sum((y - y_pred_quad) ** 2)
-
-        return error_linear <= error_quad  # Если ошибка линейной модели меньше или равна квадратичной, считаем зависимость линейной
-
-    def _polynomial_features(self, X, degree):
-        """Генерирует полиномиальные признаки до указанной степени."""
-        X_poly = X
+    def _prepare_polynomial_features(self, degree):
+        poly_features = [self.X]
         for d in range(2, degree + 1):
-            X_poly = np.c_[X_poly, X ** d]
-        return np.c_[np.ones((X_poly.shape[0], 1)), X_poly]
+            for cols in combinations_with_replacement(self.X.columns, d):
+                poly_features.append(self.X[list(cols)].prod(axis=1))
+        X_poly = pd.concat(poly_features, axis=1)
+        return np.column_stack((np.ones(X_poly.shape[0]), X_poly))
 
-    def _compute_coefficients(self, X_transformed, y):
-        """Общий метод для вычисления коэффициентов."""
-        return np.linalg.pinv(X_transformed.T @ X_transformed) @ X_transformed.T @ y
+    def _fit_linear(self):
+        X_extended = np.column_stack((np.ones(self.X.shape[0]), self.X))
+        theta = np.linalg.inv(X_extended.T @ X_extended) @ X_extended.T @ self.y
+        return theta
+
+    def _fit_exponential(self):
+        y_log = np.log(self.y)
+        X_extended = np.column_stack((np.ones(self.X.shape[0]), self.X))
+        theta = np.linalg.inv(X_extended.T @ X_extended) @ X_extended.T @ y_log
+        return np.exp(theta)
+
+    def _fit_polynomial(self, degree=2):
+        X_poly = self._prepare_polynomial_features(degree)
+        theta = np.linalg.inv(X_poly.T @ X_poly) @ X_poly.T @ self.y
+        return theta
+
+    def _fit_quadratic(self):
+        X_extended = np.column_stack((np.ones(self.X.shape[0]), self.X, self.X ** 2))
+        theta = np.linalg.inv(X_extended.T @ X_extended) @ X_extended.T @ self.y
+
+        return theta

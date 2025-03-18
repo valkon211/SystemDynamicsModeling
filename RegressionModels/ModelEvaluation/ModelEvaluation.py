@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_auc_score, r2_score
 
 
 class ModelEvaluation:
@@ -9,46 +8,31 @@ class ModelEvaluation:
         self.y = y
         self.y_pred = y_pred
 
-    def wape(self) -> pd.DataFrame:
+    def evaluate(self):
+        return {
+            "WAPE": self.weighted_absolute_percentage_error(),
+            "AR": self.accuracy_ratio(),
+            "R²": self.r_squared(),
+            "Std": self.standard_error(),
+            "F-metrics": self.f_statistic()
+        }
+
+    def weighted_absolute_percentage_error(self) -> pd.DataFrame:
         """Вычисление WAPE (Weighted Absolute Percentage Error)."""
-        absolute_errors = abs(self.y - self.y_pred)
-        sum_absolute_errors = absolute_errors.sum()
-        sum_actual_values = abs(self.y).sum()
-        wape_values = sum_absolute_errors / sum_actual_values
+        wape = (np.abs(self.y - self.y_pred).sum() / np.abs(self.y).sum()).round(4)
+        return pd.DataFrame(wape).transpose().rename(columns=lambda x: f"WAPE {x}")
 
-        return pd.DataFrame(wape_values, columns=["WAPE"])
-
-    def ar(self) -> pd.DataFrame:
+    def accuracy_ratio(self) -> pd.DataFrame:
         """Вычисление AR (Accuracy Ratio)."""
-        if self.y.shape != self.y_pred.shape:
-            raise ValueError("Размерности y и y_pred должны совпадать!")
-
-        ar_values = {}
-
-        for col in self.y.columns:
-            # Вычисляем AUC
-            auc = roc_auc_score(self.y[col], self.y_pred[col])
-
-            # Gini Coefficient
-            gini_model = 2 * auc - 1
-
-            # Accuracy Ratio
-            ar_values[col] = round(gini_model / 1, 4)  # Деление на G_perfect = 1
-
-        # Создаём DataFrame
-        ar_df = pd.DataFrame(ar_values, columns=["AR"])
-
-        return ar_df
+        ar = (1 - (np.abs(self.y - self.y_pred).sum() / np.abs(self.y).sum())).round(4)
+        return pd.DataFrame(ar).transpose().rename(columns=lambda x: f"AR {x}")
 
     def r_squared(self):
         """Коэффициент детерминации R²."""
-        # Проверка размерностей
-        if self.y.shape != self.y_pred.shape:
-            raise ValueError("Размерности y и y_pred должны совпадать!")
-
-        r2_values = {col: round(r2_score(self.y[col], self.y_pred[col]), 4) for col in self.y.columns}
-
-        return pd.DataFrame(r2_values)
+        ss_total = ((self.y - self.y.mean()) ** 2).sum()
+        ss_residual = ((self.y - self.y_pred) ** 2).sum()
+        r2 = (1 - (ss_residual / ss_total)).round(4)
+        return pd.DataFrame(r2).transpose().rename(columns=lambda x: f"R² {x}")
 
     def standard_error(self):
         """Вычисление стандартной ошибки коэффициентов регрессии."""
@@ -60,9 +44,25 @@ class ModelEvaluation:
 
     def f_statistic(self):
         """Вычисление F-статистики для модели."""
-        ss_total = ((self.y - self.y.mean()) ** 2).sum()
-        ss_regression = ((self.y_pred - self.y.mean()) ** 2).sum()
+        f_stats = []  # Список для хранения F-статистик для каждого столбца y
+
+        # Число предикторов и наблюдений
         k = len(self.X.columns)  # Число предикторов
         n = len(self.y)  # Число наблюдений
-        f_stat = (ss_regression / k) / ((ss_total - ss_regression) / (n - k - 1))
-        return f_stat.mean()
+
+        # Вычисляем F-статистику для каждого столбца y
+        for col in self.y.columns:  # Итерируемся по именам столбцов y
+            y_col = self.y[col]  # Текущий столбец y
+            y_pred_col = self.y_pred[col]  # Предсказанные значения для текущего столбца y
+
+            # Общая сумма квадратов (SS_total)
+            ss_total = ((y_col - y_col.mean()) ** 2).sum()
+
+            # Сумма квадратов регрессии (SS_regression)
+            ss_regression = ((y_pred_col - y_col.mean()) ** 2).sum()
+
+            # F-статистика для текущего столбца
+            f_stat = (ss_regression / k) / ((ss_total - ss_regression) / (n - k - 1))
+            f_stats.append(f_stat)
+
+        return np.array(f_stats)
