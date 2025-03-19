@@ -50,7 +50,8 @@ class MultipleRegressionCalculator:
         return theta
 
     def _fit_quadratic(self):
-        X_extended = np.column_stack((np.ones(self.X.shape[0]), self.X, self.X ** 2))
-        theta = np.linalg.inv(X_extended.T @ X_extended) @ X_extended.T @ self.y
+        X_np = np.array(self.X)
+        X_quad = np.column_stack((X_np, X_np[:, 1:] ** 2))  # Добавляем квадратичные признаки
+        theta = np.linalg.inv(X_quad.T @ X_quad) @ X_quad.T @ np.array(self.y)
 
         return theta

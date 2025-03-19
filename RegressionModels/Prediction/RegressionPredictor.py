@@ -7,7 +7,7 @@ from RegressionModels.MultRegressionType import MultRegressionType
 
 
 class RegressionPredictor:
-    def predict(self, X: pd.DataFrame, theta: np.ndarray, model_type: MultRegressionType):
+    def predict(self, X: pd.DataFrame, theta: np.ndarray, model_type: MultRegressionType) -> pd.DataFrame:
         if model_type == MultRegressionType.Linear:
             y_pred = self._predict_linear(X, theta)
         elif model_type == MultRegressionType.Polynomial:
@@ -36,9 +36,10 @@ class RegressionPredictor:
         X_extended = np.column_stack((np.ones(X.shape[0]), X))
         return np.exp(X_extended @ theta)
 
-    def _predict_quadratic(self, X: pd.DataFrame, theta):
+    def _predict_quadratic(self, X: pd.DataFrame, theta) -> pd.DataFrame:
         """Предсказание для квадратичной регрессии: y = b0 + b1*x + b2*x^2."""
-        X_extended = np.column_stack((np.ones(X.shape[0]), X, X**2))
+        X_np = np.array(X)
+        X_extended = np.column_stack((X_np, X_np[:, 1:] ** 2))
         return X_extended @ theta
 
     def _prepare_polynomial_features(self, X: pd.DataFrame, degree):
