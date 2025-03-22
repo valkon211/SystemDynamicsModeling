@@ -21,13 +21,13 @@ def main():
     predictor = RegressionPredictor()
 
     for model_type in MultRegressionType:
-        print(f"{model_type}\n")
+        print(f"\n{model_type}\n")
 
         theta = regression_calculator.get_theta(model_type)
-        targets_pred = predictor.predict(facts, theta, model_type)
-
-        print(f"Предсказание:\n{targets_pred}")
         print(f"Коэффициенты:\n{theta}")
+
+        targets_pred = predictor.predict(facts, theta, model_type)
+        print(f"Предсказание:\n{targets_pred}")
 
         print(f"\nОценка модели {model_type}:")
         evaluator = ModelEvaluation(facts, targets, targets_pred)

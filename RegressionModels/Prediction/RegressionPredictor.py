@@ -26,10 +26,13 @@ class RegressionPredictor:
         X_extended = np.column_stack((np.ones(X.shape[0]), X))
         return X_extended @ theta
 
-    def _predict_polynomial(self, X: pd.DataFrame, theta):
+    def _predict_polynomial(self, X: pd.DataFrame, theta, degree = 2):
         """Предсказание для полиномиальной регрессии (2-й степени): y = b0 + b1*x + b2*x^2."""
-        X_poly = self._prepare_polynomial_features(X, degree=2)
-        return X_poly @ theta
+        X_np = np.array(X)
+        X_poly = np.array(X)
+        for d in range(2, degree + 1):
+            X_poly = np.column_stack((X_poly, X_np[:, 1:] ** d))
+        return pd.DataFrame(X_poly @ theta)
 
     def _predict_exponential(self, X: pd.DataFrame, theta):
         """Предсказание для экспоненциальной регрессии: y = b0 * exp(b1*x)."""

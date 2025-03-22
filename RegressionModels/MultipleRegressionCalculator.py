@@ -45,7 +45,10 @@ class MultipleRegressionCalculator:
         return np.exp(theta)
 
     def _fit_polynomial(self, degree=2):
-        X_poly = self._prepare_polynomial_features(degree)
+        X_np = np.array(self.X)
+        X_poly = np.array(self.X)
+        for d in range(2, degree + 1):
+            X_poly = np.column_stack((X_poly, X_np[:, 1:] ** d))
         theta = np.linalg.inv(X_poly.T @ X_poly) @ X_poly.T @ self.y
         return theta
 
@@ -54,4 +57,4 @@ class MultipleRegressionCalculator:
         X_quad = np.column_stack((X_np, X_np[:, 1:] ** 2))  # Добавляем квадратичные признаки
         theta = np.linalg.inv(X_quad.T @ X_quad) @ X_quad.T @ np.array(self.y)
 
-        return theta
+        return pd.DataFrame(theta, columns=[f"y{i + 1}" for i in range(self.y.shape[1])])
