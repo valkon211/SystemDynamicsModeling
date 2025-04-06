@@ -1,5 +1,3 @@
-from itertools import combinations_with_replacement
-
 import numpy as np
 import pandas as pd
 
@@ -9,17 +7,17 @@ from RegressionModels.MultRegressionType import MultRegressionType
 class RegressionPredictor:
     def predict(self, X: pd.DataFrame, theta: np.ndarray, model_type: MultRegressionType) -> pd.DataFrame:
         if model_type == MultRegressionType.Linear:
-            y_pred = self._predict_linear(X, theta)
+            prediction = self._predict_linear(X, theta)
         elif model_type == MultRegressionType.Polynomial:
-            y_pred = self._predict_polynomial(X, theta)
+            prediction = self._predict_polynomial(X, theta)
         elif model_type == MultRegressionType.Exponential:
-            y_pred = self._predict_exponential(X, theta)
+            prediction = self._predict_exponential(X, theta)
         elif model_type == MultRegressionType.Quadratic:
-            y_pred = self._predict_quadratic(X, theta)
+            prediction = self._predict_quadratic(X, theta)
         else:
             raise ValueError(f"Неизвестный тип модели: {model_type}")
 
-        return y_pred
+        return prediction.round(4)
 
     def _predict_linear(self, X: pd.DataFrame, theta):
         """Предсказание для линейной регрессии: y = b0 + b1*x1 + b2*x2 + ..."""
@@ -28,11 +26,12 @@ class RegressionPredictor:
 
     def _predict_polynomial(self, X: pd.DataFrame, theta, degree = 2):
         """Предсказание для полиномиальной регрессии (2-й степени): y = b0 + b1*x + b2*x^2."""
-        X_np = np.array(X)
-        X_poly = np.array(X)
-        for d in range(2, degree + 1):
-            X_poly = np.column_stack((X_poly, X_np[:, 1:] ** d))
-        return pd.DataFrame(X_poly @ theta)
+        X_with_intercept = pd.concat([pd.Series(1, index=X.index, name="Intercept"), X], axis=1)
+        X_matrix = X_with_intercept.to_numpy()
+        theta_matrix = theta.to_numpy()
+        predictions = X_matrix @ theta_matrix
+
+        return pd.DataFrame(predictions, columns=theta.columns, index=X.index)
 
     def _predict_exponential(self, X: pd.DataFrame, theta):
         """Предсказание для экспоненциальной регрессии: y = b0 * exp(b1*x)."""
@@ -44,12 +43,3 @@ class RegressionPredictor:
         X_np = np.array(X)
         X_extended = np.column_stack((X_np, X_np[:, 1:] ** 2))
         return X_extended @ theta
-
-    def _prepare_polynomial_features(self, X: pd.DataFrame, degree):
-        poly_features = [X]
-        for d in range(2, degree + 1):
-            for cols in combinations_with_replacement(X.columns, d):
-                poly_features.append(X[list(cols)].prod(axis=1))
-        X_poly = pd.concat(poly_features, axis=1)
-
-        return np.column_stack((np.ones(X_poly.shape[0]), X_poly))
