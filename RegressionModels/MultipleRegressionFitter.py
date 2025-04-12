@@ -1,22 +1,21 @@
 import numpy as np
 import pandas as pd
 
-from RegressionModels.MultRegressionType import MultRegressionType
+from ModelType import ModelType
 
-
-class MultipleRegressionCalculator:
+class MultipleRegressionFitter:
     def __init__(self, X: pd.DataFrame, y: pd.DataFrame):
         self.X = X
         self.y = y
 
-    def get_theta(self, model_type: MultRegressionType):
-        if model_type == MultRegressionType.Linear:
+    def get_theta(self, model_type: ModelType):
+        if model_type == ModelType.Linear:
             theta = self._fit_linear()
-        elif model_type == MultRegressionType.Polynomial:
+        elif model_type == ModelType.Polynomial:
             theta = self._fit_polynomial()
-        elif model_type == MultRegressionType.Exponential:
+        elif model_type == ModelType.Exponential:
             theta = self._fit_exponential()
-        elif model_type == MultRegressionType.Quadratic:
+        elif model_type == ModelType.Quadratic:
             theta = self._fit_quadratic()
         else:
             raise ValueError(f"Неизвестный тип модели: {model_type}")

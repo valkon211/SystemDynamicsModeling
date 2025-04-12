@@ -2,7 +2,6 @@ import os
 import datetime
 import pandas as pd
 
-
 class DataProvider:
     @staticmethod
     def load_file(file_path: str):

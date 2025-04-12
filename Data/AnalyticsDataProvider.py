@@ -2,6 +2,7 @@ import pandas as pd
 
 from Data.DataProvider import DataProvider
 from Data.DataValidator import DataValidator
+from ModelType import ModelType
 
 
 class AnalyticsDataProvider:
@@ -27,8 +28,8 @@ class AnalyticsDataProvider:
         combined_data = pd.concat([self.facts, self.targets], axis=1)
         return combined_data.corr().round(4)
 
-    def add_prediction(self, prediction: pd.DataFrame, model_type: str):
-        self.predictions[model_type] = prediction
+    def get_predictions(self) -> dict:
+        return self.predictions
 
     def get_merged_predictions(self) -> pd.DataFrame:
         result = pd.DataFrame()
@@ -39,9 +40,12 @@ class AnalyticsDataProvider:
 
             # Добавляем предсказания каждой модели
             for model_name, pred_df in self.predictions.items():
-                result[f"{col}_{model_name}"] = pred_df[col].values
+                result[f"{col}_{model_name.name}"] = pred_df[col].values
 
         return result
+
+    def add_prediction(self, prediction: pd.DataFrame, model_type: ModelType):
+        self.predictions[model_type] = prediction
 
     def _load_data(self):
         try:
