@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from ModelEvaluator import ModelEvaluator
+from Backend.Common.ModelEvaluator import ModelEvaluator
 
 class MultipleRegressionModelEvaluator(ModelEvaluator):
     def evaluate_models(self, true_df: pd.DataFrame, predictions_dict: dict) -> pd.DataFrame:

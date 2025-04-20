@@ -1,8 +1,4 @@
-import pandas as pd
-import numpy as np
 from sklearn.metrics import mean_absolute_error, r2_score
-
-#pd.set_option('display.float_format', '{:.4f}'.format)
 
 class ModelEvaluator:
     @staticmethod

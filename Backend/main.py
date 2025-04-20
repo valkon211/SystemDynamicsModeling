@@ -1,17 +1,17 @@
-from Data.DataProvider import DataProvider
-from Data.AnalyticsDataProvider import AnalyticsDataProvider
-from ModelType import ModelType
-from RegressionModels.BestModelIdentifier import BestModelIdentifier
-from RegressionModels.MultipleRegressionFitter import MultipleRegressionFitter
-from RegressionModels.MultipleRegressionModelEvaluator import MultipleRegressionModelEvaluator
-from RegressionModels.MultipleRegressionPredictor import MultipleRegressionPredictor
-from SystemDynamics.SystemDynamicsEvaluator import SystemDynamicsEvaluator
-from SystemDynamics.SystemDynamicsFitter import SystemDynamicsFitter
+from Backend.Data.DataProvider import DataProvider
+from Backend.Data.AnalyticsDataProvider import AnalyticsDataProvider
+from Backend.Common.ModelType import ModelType
+from Backend.RegressionModels.BestModelIdentifier import BestModelIdentifier
+from Backend.RegressionModels.MultipleRegressionFitter import MultipleRegressionFitter
+from Backend.RegressionModels.MultipleRegressionModelEvaluator import MultipleRegressionModelEvaluator
+from Backend.RegressionModels.MultipleRegressionPredictor import MultipleRegressionPredictor
+from Backend.SystemDynamics.SystemDynamicsEvaluator import SystemDynamicsEvaluator
+from Backend.SystemDynamics.SystemDynamicsFitter import SystemDynamicsFitter
 
 
 def main():
-    facts_path = "facts_v3.xlsx"#input("Введите путь к файлу с таблицей фактов: ")
-    targets_path = "targets_v3.xlsx"#input("Введите путь к файлу с таблицей целевых показателей: ")
+    facts_path = "././facts_v3.xlsx"  #input("Введите путь к файлу с таблицей фактов: ")
+    targets_path = "././targets_v3.xlsx"  #input("Введите путь к файлу с таблицей целевых показателей: ")
 
     data_provider = DataProvider
     analytics_data = AnalyticsDataProvider(facts_path, targets_path)

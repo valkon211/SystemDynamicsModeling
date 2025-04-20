@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from ModelType import ModelType
-from SystemDynamics.SystemDynamicsModel import SystemDynamicsModel
+from Backend.Common.ModelType import ModelType
+from Backend.SystemDynamics.SystemDynamicsModel import SystemDynamicsModel
 
 
 class SystemDynamicsFitter:

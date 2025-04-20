@@ -1,8 +1,8 @@
 import pandas as pd
 
-from Data.DataProvider import DataProvider
-from Data.DataValidator import DataValidator
-from ModelType import ModelType
+from Backend.Data.DataProvider import DataProvider
+from Backend.Data.DataValidator import DataValidator
+from Backend.Common.ModelType import ModelType
 
 
 class AnalyticsDataProvider:

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from ModelType import ModelType
+from Backend.Common.ModelType import ModelType
 
 
 class SystemDynamicsModel:
