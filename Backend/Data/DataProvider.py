@@ -18,4 +18,4 @@ class DataProvider:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         result_filename = f"{filename}_{timestamp}.xlsx"
         filepath = os.path.join(folder, result_filename)
-        df.to_excel(filepath, index=False)
+        df.to_excel(filepath)

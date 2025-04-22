@@ -1,14 +1,13 @@
-import numpy as np
 import pandas as pd
 
 from Backend.Common.ModelType import ModelType
 from Backend.Data.AnalyticsDataPreparer import AnalyticsDataPreparer
 
 
-class SystemDynamicsModel:
+class MultipleRegressionModel:
     def __init__(self, coefficients: pd.DataFrame, model_type: ModelType):
-        self.coefficients = coefficients
         self.type = model_type
+        self.coefficients = coefficients
 
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         X_transformed = AnalyticsDataPreparer.transform_x(X, self.type)
@@ -25,4 +24,5 @@ class SystemDynamicsModel:
 
     def get_coefficients(self):
         return self.coefficients
+
 

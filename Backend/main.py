@@ -1,58 +1,37 @@
-from Backend.Data.DataProvider import DataProvider
 from Backend.Data.AnalyticsDataProvider import AnalyticsDataProvider
 from Backend.Common.ModelType import ModelType
-from Backend.RegressionModels.BestModelIdentifier import BestModelIdentifier
-from Backend.RegressionModels.MultipleRegressionFitter import MultipleRegressionFitter
+from Backend.Common.BestModelIdentifier import BestModelIdentifier
+from Backend.RegressionModels.MultipleRegressionModelCreator import MultipleRegressionModelCreator
 from Backend.RegressionModels.MultipleRegressionModelEvaluator import MultipleRegressionModelEvaluator
-from Backend.RegressionModels.MultipleRegressionPredictor import MultipleRegressionPredictor
 from Backend.SystemDynamics.SystemDynamicsEvaluator import SystemDynamicsEvaluator
-from Backend.SystemDynamics.SystemDynamicsFitter import SystemDynamicsFitter
+from Backend.SystemDynamics.SystemDynamicsModelCreator import SystemDynamicsModelCreator
 
 
 def main():
-    facts_path = "././facts_v3.xlsx"  #input("Введите путь к файлу с таблицей фактов: ")
-    targets_path = "././targets_v3.xlsx"  #input("Введите путь к файлу с таблицей целевых показателей: ")
+    facts_path = "././facts.xls"  #input("Введите путь к файлу с таблицей фактов: ")
+    targets_path = "././targets.xls"  #input("Введите путь к файлу с таблицей целевых показателей: ")
 
-    data_provider = DataProvider
     analytics_data = AnalyticsDataProvider(facts_path, targets_path)
+    best_model_ident = BestModelIdentifier()
+    mr_evaluator = MultipleRegressionModelEvaluator()
+    sd_evaluator = SystemDynamicsEvaluator()
 
     facts = analytics_data.get_facts()
     targets = analytics_data.get_targets()
 
-    regression_calculator = MultipleRegressionFitter(facts, targets)
-    predictor = MultipleRegressionPredictor()
-
-    correlation_matrix = analytics_data.get_correlation_matrix()
-    data_provider.save_to_excel(correlation_matrix, "correlation_matrix")
+    mr_predictions = {}
 
     for model_type in ModelType:
-        theta = regression_calculator.get_theta(model_type)
-        data_provider.save_to_excel(theta, f"{model_type.name}_coefficients")
+        mr_model = MultipleRegressionModelCreator.create_model(facts, targets, model_type)
+        prediction = mr_model.predict(facts)
+        mr_predictions[model_type] = prediction
 
-        targets_prediction = predictor.predict(facts, theta, model_type)
-        data_provider.save_to_excel(targets_prediction, f"{model_type.name}_prediction")
-        analytics_data.add_prediction(targets_prediction, model_type)
+    best_type = best_model_ident.determine_best_model(mr_evaluator.evaluate_models(targets, mr_predictions))
 
-    predictions = analytics_data.get_merged_predictions()
-    data_provider.save_to_excel(predictions, "models_prediction")
+    sd_model = SystemDynamicsModelCreator.create_model(facts, targets, best_type)
+    sd_prediction = sd_model.predict(facts)
 
-    mult_reg_evaluator = MultipleRegressionModelEvaluator()
-    model_evaluation = mult_reg_evaluator.evaluate_models(targets, analytics_data.get_predictions())
-
-    best_model_identifier = BestModelIdentifier()
-    best_model = best_model_identifier.determine_best_model(model_evaluation)
-
-    print(f"Лучшая модель: {best_model}")
-
-    sys_dynamics_fitter = SystemDynamicsFitter()
-    sys_dynamics_model = sys_dynamics_fitter.fit(facts, targets, best_model)
-
-    sys_dynamics_evaluator = SystemDynamicsEvaluator()
-    sys_dynamics_prediction = sys_dynamics_model.predict(facts)
-    data_provider.save_to_excel(sys_dynamics_prediction, "sys_dynamics_model_prediction")
-    sys_dynamics_evaluation = sys_dynamics_evaluator.evaluate(targets, sys_dynamics_prediction)
-
-    print(sys_dynamics_evaluation)
+    print(sd_evaluator.evaluate(targets, sd_prediction))
 
 if __name__ == "__main__":
     main()

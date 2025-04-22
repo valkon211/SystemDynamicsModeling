@@ -24,13 +24,6 @@ class AnalyticsDataProvider:
     def get_targets(self):
         return self.targets
 
-    def get_correlation_matrix(self):
-        combined_data = pd.concat([self.facts, self.targets], axis=1)
-        return combined_data.corr().round(4)
-
-    def get_predictions(self) -> dict:
-        return self.predictions
-
     def get_merged_predictions(self) -> pd.DataFrame:
         result = pd.DataFrame()
 
