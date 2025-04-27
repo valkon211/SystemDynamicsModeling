@@ -4,8 +4,8 @@ import pandas as pd
 from Backend.Common.ModelEvaluator import ModelEvaluator
 
 
-class SystemDynamicsEvaluator(ModelEvaluator):
-    def evaluate(self, true_df: pd.DataFrame, y_pred: pd.DataFrame) -> pd.DataFrame:
+class SystemDynamicsModelEvaluator(ModelEvaluator):
+    def evaluate(self, true_df: pd.DataFrame, pred_df: pd.DataFrame) -> pd.DataFrame:
         mae_total = 0
         wape_total = 0
         r2_total = 0
@@ -13,7 +13,7 @@ class SystemDynamicsEvaluator(ModelEvaluator):
 
         for column in true_df.columns:
             y_true = true_df[column]
-            y_pred = true_df[column]
+            y_pred = pred_df[column]
 
             mae = self.mean_absolute_error(y_true, y_pred)
             wape = self.wape(y_true, y_pred)

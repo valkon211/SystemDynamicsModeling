@@ -1,17 +1,22 @@
 import numpy as np
 import pandas as pd
 
+from Backend.Common.FeatureEngineer import FeatureEngineer
 from Backend.Common.ModelType import ModelType
 from Backend.Data.AnalyticsDataPreparer import AnalyticsDataPreparer
-from Backend.RegressionModels.MultipleRegressionModel import MultipleRegressionModel
+from Backend.MultipleRegression.MultipleRegressionModel import MultipleRegressionModel
 
 
 class MultipleRegressionModelCreator:
     @staticmethod
     def create_model(X: pd.DataFrame, y: pd.DataFrame, model_type: ModelType) -> MultipleRegressionModel:
-        X_transformed = AnalyticsDataPreparer.transform_x(X, model_type)
+        feature_engineer = FeatureEngineer()
+
+        X_selected = feature_engineer.generate_and_select_features(X)
+        X_transformed = AnalyticsDataPreparer.transform_x(X_selected, model_type)
+        feature_names = AnalyticsDataPreparer.get_feature_names(X_selected, model_type)
+
         coefficients_dict = {}
-        feature_names = AnalyticsDataPreparer.get_feature_names(X, model_type)
 
         for column in y.columns:
             y_transformed = AnalyticsDataPreparer.transform_y(y[[column]], model_type)
@@ -21,4 +26,4 @@ class MultipleRegressionModelCreator:
 
         coefficients = pd.DataFrame(coefficients_dict, index=feature_names)
 
-        return MultipleRegressionModel(coefficients, model_type)
+        return MultipleRegressionModel(coefficients, model_type, feature_engineer)
