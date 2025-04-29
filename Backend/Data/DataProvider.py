@@ -13,9 +13,8 @@ class DataProvider:
             raise ValueError("Формат файла не поддерживается. Используйте CSV или Excel.")
 
     @staticmethod
-    def save_to_excel(df: pd.DataFrame, filename: str = "output", folder: str = "reports"):
-        os.makedirs(folder, exist_ok=True)
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        result_filename = f"{filename}_{timestamp}.xlsx"
-        filepath = os.path.join(folder, result_filename)
+    def save_to_excel(df: pd.DataFrame, filepath: str = None):
+        if filepath is None:
+            filepath = "output.xlsx"
+
         df.to_excel(filepath)
