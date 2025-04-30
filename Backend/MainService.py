@@ -6,6 +6,7 @@ from Backend.Data.AnalyticsDataProvider import AnalyticsDataProvider
 from Backend.Common.ModelType import ModelType
 from Backend.Common.BestModelIdentifier import BestModelIdentifier
 from Backend.Data.DataProvider import DataProvider
+from Backend.MultipleRegression.MultipleRegressionModel import MultipleRegressionModel
 from Backend.MultipleRegression.MultipleRegressionModelCreator import MultipleRegressionModelCreator
 from Backend.MultipleRegression.MultipleRegressionModelEvaluator import MultipleRegressionModelEvaluator
 from Backend.SystemDynamics.SystemDynamicsModelEvaluator import SystemDynamicsModelEvaluator
@@ -13,7 +14,7 @@ from Backend.SystemDynamics.SystemDynamicsModelCreator import SystemDynamicsMode
 
 class MainService:
     @staticmethod
-    def calculate(path_x, path_y, progress_callback=None, log_callback=None):
+    def calculate_model(path_x, path_y, progress_callback=None, log_callback=None):
         def update(progress, message):
             if progress_callback:
                 progress_callback(progress)
@@ -58,7 +59,47 @@ class MainService:
 
         update(100, "Расчёт завершён")
 
-        return CalculationResult(MultipleRegressionModelCreator.create_model(X_train, y_train, best_type).coefficients, best_type.name)
+        temp_model = MultipleRegressionModelCreator.create_model(X_train, y_train, best_type)
+
+        return CalculationResult(
+            temp_model.coefficients,
+            temp_model.type.name,
+            temp_model.relevant_features,
+            temp_model.get_equations())
+
+    @staticmethod
+    def get_prediction(path_x: str, path_coefficients: str, relevant_features: list[str], model_type: ModelType,
+                       progress_callback=None, log_callback=None):
+        def update(progress, message):
+            if progress_callback:
+                progress_callback(progress)
+            if log_callback:
+                log_callback(message)
+
+        completed = 0
+
+        update(completed, "Начинаем загрузку файлов...")
+
+        X = DataProvider.load_file(path_x)
+        coefficients = DataProvider.load_file(path_coefficients, True)
+
+        completed += 10
+        update(completed, "Файлы загружены. Начинаем обработку данных...")
+
+        completed += 5
+        update(completed, "Создание модели...")
+        model = MultipleRegressionModel(coefficients, relevant_features, model_type)
+        completed += 5
+        update(completed, "Начинаем вычислять целевые переменные...")
+        prediction = model.predict(X)
+
+        update(100, "Расчёт завершён")
+
+        return CalculationResult(
+            prediction,
+            model.type.name,
+            model.relevant_features,
+            model.get_equations())
 
     @staticmethod
     def export_to_excel(df: pd.DataFrame, file_path: str = None):

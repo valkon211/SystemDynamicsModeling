@@ -18,6 +18,8 @@ class Ui_InputCalculationScreen(object):
 
         # Основной виджет, который будет содержать все элементы
         self.main_widget = QtWidgets.QWidget(main_screen)
+        self.main_widget.setMinimumSize(500, 0)
+        self.main_widget.setMaximumSize(500, 200)
         self.centering_layout.addWidget(self.main_widget)
 
         # Добавляем растяжку справа для центрирования
@@ -26,12 +28,6 @@ class Ui_InputCalculationScreen(object):
         # Основной вертикальный layout для элементов внутри main_widget
         self.main_layout = QtWidgets.QVBoxLayout(self.main_widget)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
-
-        # Устанавливаем минимальный размер для main_layout
-        self.main_widget.setMinimumSize(500, 0)
-        self.main_widget.setMaximumSize(500, 200)
-
-        # Сеттинг отступов между объектами
         self.main_layout.setSpacing(10)  # Расстояние между элементами
 
         # Элементы в layout
@@ -98,28 +94,6 @@ class Ui_InputCalculationScreen(object):
 
         # Подключаем все слоты
         QtCore.QMetaObject.connectSlotsByName(main_screen)
-
-    def retranslateUi(self, main_screen):
-        _translate = QtCore.QCoreApplication.translate
-        main_screen.setWindowTitle(_translate("main_screen", "Form"))
-        self.add_x_lbl.setText(_translate("main_screen", "Файл с признаками"))
-        self.add_x_path_btn.setText(_translate("main_screen", "Выбрать..."))
-        self.add_y_lbl.setText(_translate("main_screen", "Файл с целевыми переменными"))
-        self.add_y_path_btn.setText(_translate("main_screen", "Выбрать..."))
-        self.calculate_btn.setText(_translate("main_screen", "Рассчитать"))
-        self.back_btn.setText(_translate("main_screen", "Назад"))
-
-
-    def retranslateUi(self, main_screen):
-        _translate = QtCore.QCoreApplication.translate
-        main_screen.setWindowTitle(_translate("main_screen", "Form"))
-        self.add_x_lbl.setText(_translate("main_screen", "Файл с признаками"))
-        self.add_x_path_btn.setText(_translate("main_screen", "Выбрать..."))
-        self.add_y_lbl.setText(_translate("main_screen", "Файл с целевыми переменными"))
-        self.add_y_path_btn.setText(_translate("main_screen", "Выбрать..."))
-        self.calculate_btn.setText(_translate("main_screen", "Рассчитать"))
-        self.back_btn.setText(_translate("main_screen", "Назад"))
-
 
     def retranslateUi(self, main_screen):
         _translate = QtCore.QCoreApplication.translate

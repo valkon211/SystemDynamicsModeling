@@ -40,15 +40,37 @@ class Ui_ResultScreen(object):
         # Метки
         self.lbl_layout = QtWidgets.QHBoxLayout()
         self.lbl_layout.setObjectName("lbl_layout")
+
         self.text_lbl = QtWidgets.QLabel(self.main_widget)
         self.text_lbl.setObjectName("text_lbl")
         self.text_lbl.setFont(font)
         self.lbl_layout.addWidget(self.text_lbl)
+
         self.result_lbl = QtWidgets.QLabel(self.main_widget)
         self.result_lbl.setObjectName("result_lbl")
         self.result_lbl.setFont(font)
         self.lbl_layout.addWidget(self.result_lbl)
         self.main_layout.addLayout(self.lbl_layout)
+
+        self.relevant_text_lbl = QtWidgets.QLabel(self.main_widget)
+        self.relevant_text_lbl.setObjectName("relevant_text_lbl")
+        self.relevant_text_lbl.setFont(font)
+        self.main_layout.addWidget(self.relevant_text_lbl)
+
+        self.relevant_features_le = QtWidgets.QLineEdit(self.main_widget)
+        self.relevant_features_le.setObjectName("relevant_features_le")
+        self.relevant_features_le.setReadOnly(True)
+        self.main_layout.addWidget(self.relevant_features_le)
+
+        self.equations_text_lbl = QtWidgets.QLabel(self.main_widget)
+        self.equations_text_lbl.setObjectName("equations_text_lbl")
+        self.equations_text_lbl.setFont(font)
+        self.main_layout.addWidget(self.equations_text_lbl)
+
+        self.equations_te = QtWidgets.QTextEdit(self.main_widget)
+        self.equations_te.setReadOnly(True)
+        self.equations_te.setObjectName("equations_te")
+        self.main_layout.addWidget(self.equations_te)
 
         # Таблица
         self.table_result = QtWidgets.QTableWidget(self.main_widget)
@@ -67,3 +89,5 @@ class Ui_ResultScreen(object):
         self.export_btn.setText(_translate("Form", "Экспорт в excel"))
         self.text_lbl.setText(_translate("Form", "Функция:"))
         self.result_lbl.setText(_translate("Form", ""))
+        self.relevant_text_lbl.setText(_translate("Form", "Релевантные переменные:"))
+        self.equations_text_lbl.setText(_translate("Form", "Уравнения:"))

@@ -6,6 +6,7 @@ from Frontend.UI.Ui_InputCalculationScreen import Ui_InputCalculationScreen
 
 class InputCalculationScreen(QWidget, Ui_InputCalculationScreen):
     start_calculation = pyqtSignal(str, str)
+    back_to_home = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -17,6 +18,7 @@ class InputCalculationScreen(QWidget, Ui_InputCalculationScreen):
         self.add_x_path_btn.clicked.connect(self.select_x_file)
         self.add_y_path_btn.clicked.connect(self.select_y_file)
         self.calculate_btn.clicked.connect(self.calculate)
+        self.back_btn.clicked.connect(self.back_to_home.emit)
 
     def select_x_file(self):
         path = self._open_file_dialog()

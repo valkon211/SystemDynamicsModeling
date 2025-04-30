@@ -10,20 +10,25 @@ from Backend.MultipleRegression.MultipleRegressionModel import MultipleRegressio
 class MultipleRegressionModelCreator:
     @staticmethod
     def create_model(X: pd.DataFrame, y: pd.DataFrame, model_type: ModelType) -> MultipleRegressionModel:
-        feature_engineer = FeatureEngineer()
+        # 1. Генерация признаков и отбор
+        X_features = FeatureEngineer.generate_features(X)
+        relevant_features = FeatureEngineer.select_relevant_features(X_features)
+        X_selected = X_features[relevant_features]
 
-        X_selected = feature_engineer.generate_and_select_features(X)
+        # 2. Преобразование признаков
         X_transformed = AnalyticsDataPreparer.transform_x(X_selected, model_type)
+
+        # 3. Получаем имена фичей (в том порядке, в котором они идут в transform_x)
         feature_names = AnalyticsDataPreparer.get_feature_names(X_selected, model_type)
 
+        # 4. Расчёт коэффициентов
         coefficients_dict = {}
-
         for column in y.columns:
             y_transformed = AnalyticsDataPreparer.transform_y(y[[column]], model_type)
-            coefficients_array = np.linalg.pinv(X_transformed) @ y_transformed
-            coefficients_array = coefficients_array.flatten()
-            coefficients_dict[column] = coefficients_array
+            coef = np.linalg.pinv(X_transformed) @ y_transformed
+            coefficients_dict[column] = coef.flatten()
 
-        coefficients = pd.DataFrame(coefficients_dict, index=feature_names)
+        # 5. Создаём DataFrame с индексами — названиями фичей
+        coefficients_df = pd.DataFrame(coefficients_dict, index=feature_names)
 
-        return MultipleRegressionModel(coefficients, model_type, feature_engineer)
+        return MultipleRegressionModel(coefficients_df, relevant_features, model_type)

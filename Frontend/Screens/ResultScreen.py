@@ -7,7 +7,7 @@ from Frontend.UI.Ui_ResultScreen import Ui_ResultScreen
 
 
 class ResultScreen(QWidget, Ui_ResultScreen):
-    back_to_main = pyqtSignal()
+    back_to_home = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -16,10 +16,17 @@ class ResultScreen(QWidget, Ui_ResultScreen):
         self.result_df = None
 
         self.export_btn.clicked.connect(self.export_to_excel)
-        self.back_btn.clicked.connect(self.back_to_main.emit)
+        self.back_btn.clicked.connect(self.back_to_home.emit)
 
     def set_func_name(self, name):
         self.result_lbl.setText(name)
+
+    def set_relevant_features(self, features: list[str]):
+        self.relevant_features_le.setText(', '.join(features))
+
+    def set_equations(self, equations: dict[str, str]):
+        for equation in equations.values():
+            self.equations_te.append(equation)
 
     def set_dataframe(self, df: pd.DataFrame):
         self.result_df = df
@@ -27,6 +34,7 @@ class ResultScreen(QWidget, Ui_ResultScreen):
         self.table_result.setRowCount(len(df))
         self.table_result.setColumnCount(len(df.columns))
         self.table_result.setHorizontalHeaderLabels(df.columns)
+        self.table_result.setVerticalHeaderLabels(df.index.tolist())
 
         for i in range(len(df)):
             for j in range(len(df.columns)):
