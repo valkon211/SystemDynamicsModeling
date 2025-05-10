@@ -155,8 +155,8 @@ class MainService:
 
 
 if __name__ == '__main__':
-    features_path = "C:/Users/konva/PycharmProjects/SystemDynamicsModeling/facts.xls"
-    targets_path = "C:/Users/konva/PycharmProjects/SystemDynamicsModeling/targets.xls"
+    features_path = ""
+    targets_path = ""
 
     best_model_ident = BestModelIdentifier()
     mr_evaluator = MultipleRegressionModelEvaluator()
