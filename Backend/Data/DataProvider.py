@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 
 class DataProvider:
@@ -20,3 +22,16 @@ class DataProvider:
             filepath = "output.xlsx"
 
         df.to_excel(filepath)
+
+    @staticmethod
+    def save_to_json(data, filepath: str = None):
+        if filepath is None:
+            filepath = "output.json"
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+
+    @staticmethod
+    def read_json(filepath: str):
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data

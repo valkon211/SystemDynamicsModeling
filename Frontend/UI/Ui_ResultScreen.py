@@ -18,7 +18,7 @@ class Ui_ResultScreen(object):
         self.centering_layout.addStretch(1)
 
         self.main_widget.setMinimumSize(600, 0)
-        self.main_widget.setMaximumSize(600, 400)
+        self.main_widget.setMaximumSize(600, 500)
 
         self.main_layout = QtWidgets.QVBoxLayout(self.main_widget)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
@@ -29,9 +29,12 @@ class Ui_ResultScreen(object):
         self.back_btn = QtWidgets.QPushButton(self.main_widget)
         self.back_btn.setObjectName("back_btn")
         self.btn_layout.addWidget(self.back_btn)
-        self.export_btn = QtWidgets.QPushButton(self.main_widget)
-        self.export_btn.setObjectName("export_btn")
-        self.btn_layout.addWidget(self.export_btn)
+        self.export_excel_btn = QtWidgets.QPushButton(self.main_widget)
+        self.export_excel_btn.setObjectName("export_excel_btn")
+        self.btn_layout.addWidget(self.export_excel_btn)
+        self.export_json_btn = QtWidgets.QPushButton(self.main_widget)
+        self.export_json_btn.setObjectName("export_json_btn")
+        self.btn_layout.addWidget(self.export_json_btn)
         self.main_layout.addLayout(self.btn_layout)
 
         font = QtGui.QFont()
@@ -86,7 +89,8 @@ class Ui_ResultScreen(object):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
         self.back_btn.setText(_translate("Form", "На главную"))
-        self.export_btn.setText(_translate("Form", "Экспорт в excel"))
+        self.export_excel_btn.setText(_translate("Form", "Экспорт в excel"))
+        self.export_json_btn.setText(_translate("Form", "Экспорт в json"))
         self.text_lbl.setText(_translate("Form", "Функция:"))
         self.result_lbl.setText(_translate("Form", ""))
         self.relevant_text_lbl.setText(_translate("Form", "Релевантные переменные:"))

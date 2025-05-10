@@ -37,7 +37,8 @@ class MainWindow(QMainWindow):
         self.input_calculation_screen.start_calculation.connect(self.start_calculation)
 
         self.input_prediction_screen.back_to_home.connect(self.show_home_screen)
-        self.input_prediction_screen.start_calculation.connect(self.start_prediction)
+        self.input_prediction_screen.start_calculation_add.connect(self.start_prediction)
+        self.input_prediction_screen.start_calculation_import.connect(self.start_prediction_import)
 
         self.result_screen.back_to_home.connect(self.show_home_screen)
 
@@ -55,13 +56,7 @@ class MainWindow(QMainWindow):
 
     def reset_input_prediction_screen(self):
         self.input_prediction_screen.file_path_x_le.clear()
-        self.input_prediction_screen.coefficients_le.clear()
-        self.input_prediction_screen.features_le.clear()
-        self.input_prediction_screen.func_lin_rbtn.setChecked(False)
-        self.input_prediction_screen.func_exp_rbtn.setChecked(False)
-        self.input_prediction_screen.func_quadro_rbtn.setChecked(False)
         self.input_prediction_screen.file_path_x = ""
-        self.input_prediction_screen.file_path_coef= ""
 
     def reset_progress_screen(self):
         self.progress_screen.log_te.clear()
@@ -94,10 +89,7 @@ class MainWindow(QMainWindow):
         self.window.activateWindow()  # Фокус
 
     def show_result(self, result: CalculationResult):
-        self.result_screen.set_dataframe(result.result_df)
-        self.result_screen.set_func_name(result.result_func)
-        self.result_screen.set_relevant_features(result.relevant_features)
-        self.result_screen.set_equations(result.equations)
+        self.result_screen.set_data(result)
         self.stack.setCurrentWidget(self.result_screen)
 
     def start_calculation(self, path_x, path_y):
@@ -112,7 +104,16 @@ class MainWindow(QMainWindow):
     def start_prediction(self, path_x, path_coef, features, model_type):
         self.show_progress_screen()
 
-        self.thread = PredictionCalculationThread(path_x, path_coef, features, model_type)
+        self.thread = PredictionCalculationThread(path_x=path_x, path_coef=path_coef, features=features, model_type=model_type)
+        self.thread.progress_update.connect(self.progress_screen.update_progress)
+        self.thread.log_update.connect(self.progress_screen.append_log)
+        self.thread.calculation_done.connect(self.show_result)
+        self.thread.start()
+
+    def start_prediction_import(self, path_x, path_json):
+        self.show_progress_screen()
+
+        self.thread = PredictionCalculationThread(path_x=path_x, path_json=path_json)
         self.thread.progress_update.connect(self.progress_screen.update_progress)
         self.thread.log_update.connect(self.progress_screen.append_log)
         self.thread.calculation_done.connect(self.show_result)
