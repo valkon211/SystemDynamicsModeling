@@ -4,7 +4,7 @@ import pandas as pd
 
 class DataProvider:
     @staticmethod
-    def load_file(file_path: str, index_in_first: bool = False):
+    def read_table_file(file_path: str, index_in_first: bool = False):
         if file_path.endswith('.csv'):
             if index_in_first:
                 return pd.read_csv(file_path, index_col=0)
@@ -31,7 +31,7 @@ class DataProvider:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
     @staticmethod
-    def read_json(filepath: str):
+    def read_json_file(filepath: str):
         with open(filepath, 'r', encoding='utf-8') as f:
             data = json.load(f)
             return data

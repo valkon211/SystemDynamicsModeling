@@ -78,13 +78,13 @@ class MainService:
             completed = 0
             update(completed, "Начинаем загрузку файлов...")
 
-            X = DataProvider.load_file(data.path_x)
+            X = DataProvider.read_table_file(data.path_x)
             X.columns = [f"x{i + 1}" for i in range(X.shape[1])]
 
             completed = 10
             update(completed, "Файл с признаками загружен")
 
-            model_data = DataProvider.read_json(data.json_data_path)
+            model_data = DataProvider.read_json_file(data.json_data_path)
 
             completed = 20
             update(completed, "Файл с данными о модели загружен")
@@ -114,13 +114,13 @@ class MainService:
             completed = 0
             update(completed, "Начинаем загрузку файлов...")
 
-            X = DataProvider.load_file(data.path_x)
+            X = DataProvider.read_table_file(data.path_x)
             X.columns = [f"x{i + 1}" for i in range(X.shape[1])]
 
             completed = 10
             update(completed, "Файл с признаками загружен")
 
-            coefficients = DataProvider.load_file(data.path_coefficients, True)
+            coefficients = DataProvider.read_table_file(data.path_coefficients, True)
 
             completed = 20
             update(completed, "Файл с коэффициентами загружен")
@@ -180,6 +180,10 @@ if __name__ == '__main__':
 
     best_type = best_model_ident.determine_best_model(mr_evaluator.evaluate_models(y_test, mr_predictions))
     best_mr_model = mr_models[best_type]
+
+    print("best model type:\t", best_type)
+    print("features:\t", best_mr_model.features)
+    print("coefficients:\n", best_mr_model.coefficients)
 
     sd_model = sd_creator.create(X_train, y_train, best_type, best_mr_model.features)
 

@@ -1,5 +1,3 @@
-import itertools
-
 import numpy as np
 import pandas as pd
 
@@ -8,7 +6,6 @@ from Backend.Common.ModelType import ModelType
 
 class AnalyticsDataPreparer:
     min_variance_threshold = 1e-5
-    degree = 3
 
     @staticmethod
     def transform_x(X: pd.DataFrame, model_type: ModelType) -> np.ndarray:
@@ -43,6 +40,6 @@ class AnalyticsDataPreparer:
         elif model_type == ModelType.Quadratic:
             feature_names = ['Intercept'] + list(X.columns) + [f"{col}²" for col in X.columns]
         else:
-            raise ValueError(f"Unsupported model type: {model_type}")
+            raise ValueError(f"Неизвестный тип модели: {model_type}")
 
         return feature_names

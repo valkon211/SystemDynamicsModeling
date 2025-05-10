@@ -42,8 +42,8 @@ class AnalyticsDataProvider:
 
     def _load_data(self):
         try:
-            facts = self.dataProvider.load_file(self.facts_path)
-            targets = self.dataProvider.load_file(self.targets_path)
+            facts = self.dataProvider.read_table_file(self.facts_path)
+            targets = self.dataProvider.read_table_file(self.targets_path)
 
             is_valid, message = self.dataValidator.validate(facts, targets)
 

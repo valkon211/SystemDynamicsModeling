@@ -10,13 +10,9 @@ from Backend.MultipleRegression.MultipleRegressionModel import MultipleRegressio
 class MultipleRegressionModelCreator:
     @staticmethod
     def create_model(X: pd.DataFrame, y: pd.DataFrame, model_type: ModelType) -> MultipleRegressionModel:
-        X_features = FeatureEngineer.generate_features(X)
-        relevant_features = FeatureEngineer.select_relevant_features(X_features)
-        X_selected = X_features[relevant_features]
-
-        X_transformed = AnalyticsDataPreparer.transform_x(X, model_type)
-
-        feature_names = AnalyticsDataPreparer.get_feature_names(X, model_type)
+        relevant_features = FeatureEngineer.select_relevant_features(X)
+        X_selected = X[relevant_features]
+        X_transformed = AnalyticsDataPreparer.transform_x(X_selected, model_type)
 
         coefficients_dict = {}
         for column in y.columns:
@@ -24,6 +20,7 @@ class MultipleRegressionModelCreator:
             coef = np.linalg.pinv(X_transformed) @ y_transformed
             coefficients_dict[column] = coef.flatten()
 
+        feature_names = AnalyticsDataPreparer.get_feature_names(X_selected, model_type)
         coefficients_df = pd.DataFrame(coefficients_dict, index=feature_names)
 
         return MultipleRegressionModel(
