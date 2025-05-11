@@ -34,7 +34,8 @@ class ResultScreen(QWidget, Ui_ResultScreen):
         self.result_lbl.setText(name)
 
     def _set_relevant_features(self, features: list[str]):
-        self.relevant_features_le.setText(', '.join(features))
+        if features:
+            self.relevant_features_le.setText(', '.join(features))
 
     def _set_equations(self, equations: dict[str, str]):
         for equation in equations.values():

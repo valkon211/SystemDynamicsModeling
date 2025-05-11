@@ -37,14 +37,14 @@ class SystemDynamicModel:
 
             y_pred = X_aligned.values @ coeffs.values
 
-            if self.model_type == "exponential":
+            if self.model_type == ModelType.Exponential:
                 y_pred = np.exp(y_pred)
 
             predictions[target] = y_pred
 
         return predictions
 
-    def get_equations(self) -> dict[str, str]:
+    def get_equation_strings(self) -> dict[str, str]:
         equations = {}
 
         for target in self.coefficients.columns:
@@ -77,22 +77,20 @@ class SystemDynamicModel:
 
     def _build_linear_matrix(self, X: pd.DataFrame) -> pd.DataFrame:
         X_copy = X.copy()
-        X_copy["intercept"] = 1.0
+        X_copy["Intercept"] = 1.0
         return X_copy
 
     def _build_quadratic_matrix(self, X: pd.DataFrame) -> pd.DataFrame:
         X_quad = X.copy()
         for col in X.columns:
-            X_quad[f"{col}^2"] = X[col] ** 2
-        X_quad["intercept"] = 1.0
+            X_quad[f"{col}²"] = X[col] ** 2
+        X_quad["Intercept"] = 1.0
         return X_quad
 
-    def get_as_json(self):
-        data = {
+    def to_json(self):
+        return {
             "model_type": self.model_type.name,
             "features": list(self.coefficients.index),
             "coefficients": self.coefficients.to_dict(orient="index")
         }
-
-        return data
 

@@ -75,12 +75,12 @@ class SystemDynamicModelCreator:
 
     def _build_linear_matrix(self, X: pd.DataFrame) -> pd.DataFrame:
         X_copy = X.copy()
-        X_copy["intercept"] = 1.0
+        X_copy["Intercept"] = 1.0
         return X_copy
 
     def _build_quadratic_matrix(self, X: pd.DataFrame) -> pd.DataFrame:
         X_quad = X.copy()
         for col in X.columns:
-            X_quad[f"{col}^2"] = X[col] ** 2
-        X_quad["intercept"] = 1.0
+            X_quad[f"{col}²"] = X[col] ** 2
+        X_quad["Intercept"] = 1.0
         return X_quad

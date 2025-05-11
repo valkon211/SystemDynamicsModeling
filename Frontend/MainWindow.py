@@ -92,28 +92,29 @@ class MainWindow(QMainWindow):
         self.result_screen.set_data(result)
         self.stack.setCurrentWidget(self.result_screen)
 
-    def start_calculation(self, path_x, path_y):
+    def start_calculation(self, path_x, path_y, is_extended):
         self.show_progress_screen()
 
-        self.thread = ModelCalculationThread(path_x, path_y)
+        self.thread = ModelCalculationThread(path_x, path_y, is_extended)
         self.thread.progress_update.connect(self.progress_screen.update_progress)
         self.thread.log_update.connect(self.progress_screen.append_log)
         self.thread.calculation_done.connect(self.show_result)
         self.thread.start()
 
-    def start_prediction(self, path_x, path_coef, features, model_type):
+    def start_prediction(self, path_x, path_coef, features, model_type, is_extended):
         self.show_progress_screen()
 
-        self.thread = PredictionCalculationThread(path_x=path_x, path_coef=path_coef, features=features, model_type=model_type)
+        self.thread = PredictionCalculationThread(
+            path_x=path_x, path_coef=path_coef, features=features, model_type=model_type, is_extended=is_extended)
         self.thread.progress_update.connect(self.progress_screen.update_progress)
         self.thread.log_update.connect(self.progress_screen.append_log)
         self.thread.calculation_done.connect(self.show_result)
         self.thread.start()
 
-    def start_prediction_import(self, path_x, path_json):
+    def start_prediction_import(self, path_x, path_json, is_extended):
         self.show_progress_screen()
 
-        self.thread = PredictionCalculationThread(path_x=path_x, path_json=path_json)
+        self.thread = PredictionCalculationThread(path_x=path_x, path_json=path_json, is_extended=is_extended)
         self.thread.progress_update.connect(self.progress_screen.update_progress)
         self.thread.log_update.connect(self.progress_screen.append_log)
         self.thread.calculation_done.connect(self.show_result)

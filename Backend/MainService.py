@@ -10,13 +10,14 @@ from Backend.Data.DataProvider import DataProvider
 from Backend.MultipleRegression.MultipleRegressionModel import MultipleRegressionModel
 from Backend.MultipleRegression.MultipleRegressionModelCreator import MultipleRegressionModelCreator
 from Backend.MultipleRegression.MultipleRegressionModelEvaluator import MultipleRegressionModelEvaluator
+from Backend.SystemDynamics.ExtendedSystemDynamicModelCreator import ExtendedSystemDynamicModelCreator
 from Backend.SystemDynamics.SystemDynamicsModelCreator import SystemDynamicModelCreator
 from Backend.SystemDynamics.SystemDynamicsModelEvaluator import SystemDynamicsModelEvaluator
 
 
 class MainService:
     @staticmethod
-    def calculate_model(path_x, path_y, progress_callback=None, log_callback=None):
+    def calculate_model(path_x, path_y, is_extended=False, progress_callback=None, log_callback=None):
         def update(progress, message):
             if progress_callback:
                 progress_callback(progress)
@@ -25,46 +26,78 @@ class MainService:
 
         best_model_ident = BestModelIdentifier()
         mr_evaluator = MultipleRegressionModelEvaluator()
+        sd_evaluator = SystemDynamicsModelEvaluator()
 
         completed = 0
-
         update(completed, "Начинаем загрузку файлов...")
 
         analytics_data = AnalyticsDataProvider(path_x, path_y)
-        completed += 5
 
+        completed = 5
         update(completed, "Файлы загружены. Начинаем обработку данных...")
 
         features = analytics_data.get_facts()
         targets = analytics_data.get_targets()
 
         X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, random_state=42)
-        completed += 5
 
+        completed = 10
         update(completed, "Разделение выборки на тренировочную и тестовую завершено. Начинаем основную обработку...")
 
         mr_predictions = {}
-
+        mr_models = {}
         for model_type in ModelType:
             mr_model = MultipleRegressionModelCreator.create_model(X_train, y_train, model_type)
             prediction = mr_model.predict(X_test)
+
+            mr_models[model_type] = mr_model
             mr_predictions[model_type] = prediction
 
             completed += 10
             update(completed, f"Расчёт модели множественной регрессии типа {model_type.name} завершён.")
 
+        completed = 50
+        update(completed, f"Расчёт моделей множественной регрессии типа завершён.")
+        update(completed, f"Начинаем анализ моделей множественной регрессии.")
+
         best_type = best_model_ident.determine_best_model(mr_evaluator.evaluate_models(y_test, mr_predictions))
+        best_mr_model = mr_models[best_type]
 
-        update(100, "Расчёт завершён")
+        completed = 60
+        update(completed, f"Анализ моделей множественной регрессии завершён.")
+        update(completed, f"Начинаем построение модели системной динамики.")
 
-        temp_model = MultipleRegressionModelCreator.create_model(X_train, y_train, best_type)
+        if is_extended:
+            sd_creator = ExtendedSystemDynamicModelCreator()
+            sd_model = sd_creator.create(features, targets, best_type)
 
-        return CalculationResult(
-            result_df= temp_model.coefficients,
-            model_type= temp_model.model_type.name,
-            relevant_features= temp_model.features,
-            equations = temp_model.get_equations(),
-            json_data= temp_model.get_as_json())
+            data = pd.concat([X_test, y_test], axis=1)
+            sd_prediction = sd_model.predict(data.iloc[0], 1)
+            sd_eval_result = sd_evaluator.evaluate(data.iloc[1], sd_prediction.iloc[1])
+
+            print(sd_eval_result)
+
+            update(100, "Расчёт завершён")
+
+            return CalculationResult(
+                result_df= sd_model.coefficients,
+                model_type= sd_model.model_type.name,
+                relevant_features= None,
+                equations = sd_model.get_equation_strings(),
+                json_data= sd_model.to_json())
+
+        else:
+            sd_creator = SystemDynamicModelCreator()
+            sd_model = sd_creator.create(features, targets, best_type, best_mr_model.features)
+
+            update(100, "Расчёт завершён")
+
+            return CalculationResult(
+                result_df=sd_model.coefficients,
+                model_type=sd_model.model_type.name,
+                relevant_features=sd_model.relevant_features,
+                equations=sd_model.get_equation_strings(),
+                json_data=sd_model.to_json())
 
     @staticmethod
     def get_prediction(data: InputPredictionData, progress_callback=None, log_callback=None):
@@ -151,42 +184,3 @@ class MainService:
     @staticmethod
     def export_to_json(data, filepath: str = None):
         DataProvider.save_to_json(data, filepath)
-
-
-
-if __name__ == '__main__':
-    features_path = "C:/Users/konva/PycharmProjects/SystemDynamicsModeling/facts.xls"
-    targets_path = "C:/Users/konva/PycharmProjects/SystemDynamicsModeling/targets.xls"
-
-    best_model_ident = BestModelIdentifier()
-    mr_evaluator = MultipleRegressionModelEvaluator()
-    sd_creator = SystemDynamicModelCreator()
-    sd_evaluator = SystemDynamicsModelEvaluator()
-
-    analytics_data = AnalyticsDataProvider(features_path, targets_path)
-    features = analytics_data.get_facts()
-    targets = analytics_data.get_targets()
-
-    X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, random_state=42)
-
-    mr_predictions = {}
-    mr_models = {}
-    for model_type in ModelType:
-        mr_model = MultipleRegressionModelCreator.create_model(X_train, y_train, model_type)
-        prediction = mr_model.predict(X_test)
-
-        mr_models[model_type] = mr_model
-        mr_predictions[model_type] = prediction
-
-    best_type = best_model_ident.determine_best_model(mr_evaluator.evaluate_models(y_test, mr_predictions))
-    best_mr_model = mr_models[best_type]
-
-    print("best model type:\t", best_type)
-    print("features:\t", best_mr_model.features)
-    print("coefficients:\n", best_mr_model.coefficients)
-
-    sd_model = sd_creator.create(X_train, y_train, best_type, best_mr_model.features)
-
-    sd_prediction = sd_model.predict(X_test)
-
-    print(sd_evaluator.evaluate(y_test, sd_prediction))

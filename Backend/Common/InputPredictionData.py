@@ -10,3 +10,4 @@ class InputPredictionData:
     model_type: ModelType = None
     relevant_features: list[str] = None
     json_data_path: str = None
+    is_extended: bool = False

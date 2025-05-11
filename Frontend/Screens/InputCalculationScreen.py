@@ -5,7 +5,7 @@ from Frontend.UI.Ui_InputCalculationScreen import Ui_InputCalculationScreen
 
 
 class InputCalculationScreen(QWidget, Ui_InputCalculationScreen):
-    start_calculation = pyqtSignal(str, str)
+    start_calculation = pyqtSignal(str, str, bool)
     back_to_home = pyqtSignal()
 
     def __init__(self):
@@ -32,7 +32,10 @@ class InputCalculationScreen(QWidget, Ui_InputCalculationScreen):
 
     def calculate(self):
         if self.file_path_x and self.file_path_y:
-            self.start_calculation.emit(self.file_path_x, self.file_path_y)
+            if self.sd_simple_rbtn.isChecked():
+                self.start_calculation.emit(self.file_path_x, self.file_path_y, False)
+            if self.sd_extended_rbtn.isChecked():
+                self.start_calculation.emit(self.file_path_x, self.file_path_y, True)
 
     def _open_file_dialog(self):
         file_name, _ = QFileDialog.getOpenFileName(

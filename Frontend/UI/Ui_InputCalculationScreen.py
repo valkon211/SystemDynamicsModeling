@@ -19,7 +19,7 @@ class Ui_InputCalculationScreen(object):
         # Основной виджет, который будет содержать все элементы
         self.main_widget = QtWidgets.QWidget(main_screen)
         self.main_widget.setMinimumSize(500, 0)
-        self.main_widget.setMaximumSize(500, 200)
+        self.main_widget.setMaximumSize(500, 300)
         self.centering_layout.addWidget(self.main_widget)
 
         # Добавляем растяжку справа для центрирования
@@ -74,6 +74,24 @@ class Ui_InputCalculationScreen(object):
 
         self.main_layout.addLayout(self.add_file_y_layout)
 
+        # Выбор типа модели СД
+        self.sd_chose_layout = QtWidgets.QVBoxLayout(self.main_widget)
+        self.sd_chose_layout.setSpacing(10)
+
+        self.sd_chose_lbl = QtWidgets.QLabel(self.main_widget)
+        self.sd_chose_lbl.setObjectName("sd_chose_lbl")
+        self.sd_chose_layout.addWidget(self.sd_chose_lbl)
+
+        self.sd_simple_rbtn = QtWidgets.QRadioButton(self.main_widget)
+        self.sd_simple_rbtn.setObjectName("sd_simple_rbtn")
+        self.sd_chose_layout.addWidget(self.sd_simple_rbtn)
+
+        self.sd_extended_rbtn = QtWidgets.QRadioButton(self.main_widget)
+        self.sd_extended_rbtn.setObjectName("sd_extended_rbtn")
+        self.sd_chose_layout.addWidget(self.sd_extended_rbtn)
+
+        self.main_layout.addLayout(self.sd_chose_layout)
+
         # Layout для кнопок
         self.buttons_layout = QtWidgets.QHBoxLayout()
         self.buttons_layout.setContentsMargins(0, 0, 0, 0)
@@ -104,4 +122,7 @@ class Ui_InputCalculationScreen(object):
         self.add_y_path_btn.setText(_translate("main_screen", "Выбрать..."))
         self.calculate_btn.setText(_translate("main_screen", "Рассчитать"))
         self.back_btn.setText(_translate("main_screen", "Назад"))
+        self.sd_chose_lbl.setText(_translate("main_screen", "Вид системной динамики:"))
+        self.sd_simple_rbtn.setText(_translate("main_screen", "Простая"))
+        self.sd_extended_rbtn.setText(_translate("main_screen", "Расширенная"))
 

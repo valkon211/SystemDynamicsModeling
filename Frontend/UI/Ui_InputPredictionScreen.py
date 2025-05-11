@@ -86,6 +86,24 @@ class Ui_InputPredictionScreen(object):
 
         self.main_layout.addLayout(self.model_config_layout)
 
+        # Выбор типа модели СД
+        self.sd_chose_layout = QtWidgets.QVBoxLayout(self.main_widget)
+        self.sd_chose_layout.setSpacing(10)
+
+        self.sd_chose_lbl = QtWidgets.QLabel(self.main_widget)
+        self.sd_chose_lbl.setObjectName("sd_chose_lbl")
+        self.sd_chose_layout.addWidget(self.sd_chose_lbl)
+
+        self.sd_simple_rbtn = QtWidgets.QRadioButton(self.main_widget)
+        self.sd_simple_rbtn.setObjectName("sd_simple_rbtn")
+        self.sd_chose_layout.addWidget(self.sd_simple_rbtn)
+
+        self.sd_extended_rbtn = QtWidgets.QRadioButton(self.main_widget)
+        self.sd_extended_rbtn.setObjectName("sd_extended_rbtn")
+        self.sd_chose_layout.addWidget(self.sd_extended_rbtn)
+
+        self.main_layout.addLayout(self.sd_chose_layout)
+
         # Layout для кнопок
         self.buttons_layout = QtWidgets.QHBoxLayout()
         self.buttons_layout.setContentsMargins(0, 0, 0, 0)
@@ -114,3 +132,6 @@ class Ui_InputPredictionScreen(object):
         self.model_conf_add_btn.setText(_translate("main_screen", "Ввести вручную"))
         self.calculate_btn.setText(_translate("main_screen", "Рассчитать"))
         self.back_btn.setText(_translate("main_screen", "Назад"))
+        self.sd_chose_lbl.setText(_translate("main_screen", "Вид системной динамики:"))
+        self.sd_simple_rbtn.setText(_translate("main_screen", "Простая"))
+        self.sd_extended_rbtn.setText(_translate("main_screen", "Расширенная"))
