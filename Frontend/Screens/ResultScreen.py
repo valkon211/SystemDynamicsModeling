@@ -47,7 +47,7 @@ class ResultScreen(QWidget, Ui_ResultScreen):
         self.table_result.setRowCount(len(df))
         self.table_result.setColumnCount(len(df.columns))
         self.table_result.setHorizontalHeaderLabels(df.columns)
-        self.table_result.setVerticalHeaderLabels(df.index.tolist())
+        self.table_result.setVerticalHeaderLabels([str(x) for x in df.index.tolist()])
 
         for i in range(len(df)):
             for j in range(len(df.columns)):

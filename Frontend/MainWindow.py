@@ -37,8 +37,7 @@ class MainWindow(QMainWindow):
         self.input_calculation_screen.start_calculation.connect(self.start_calculation)
 
         self.input_prediction_screen.back_to_home.connect(self.show_home_screen)
-        self.input_prediction_screen.start_calculation_add.connect(self.start_prediction)
-        self.input_prediction_screen.start_calculation_import.connect(self.start_prediction_import)
+        self.input_prediction_screen.start_calculation.connect(self.start_prediction)
 
         self.result_screen.back_to_home.connect(self.show_home_screen)
 
@@ -61,6 +60,11 @@ class MainWindow(QMainWindow):
     def reset_progress_screen(self):
         self.progress_screen.log_te.clear()
         self.progress_screen.progressBar.setValue(0)
+
+    def reset_result_screen(self):
+        self.result_screen.table_result.clear()
+        self.result_screen.relevant_features_le.clear()
+        self.result_screen.equations_te.clear()
 
     def show_home_screen(self):
         self.stack.setCurrentWidget(self.home_screen)
@@ -89,6 +93,7 @@ class MainWindow(QMainWindow):
         self.window.activateWindow()  # Фокус
 
     def show_result(self, result: CalculationResult):
+        self.reset_result_screen()
         self.result_screen.set_data(result)
         self.stack.setCurrentWidget(self.result_screen)
 
@@ -101,20 +106,10 @@ class MainWindow(QMainWindow):
         self.thread.calculation_done.connect(self.show_result)
         self.thread.start()
 
-    def start_prediction(self, path_x, path_coef, features, model_type, is_extended):
+    def start_prediction(self, data):
         self.show_progress_screen()
 
-        self.thread = PredictionCalculationThread(
-            path_x=path_x, path_coef=path_coef, features=features, model_type=model_type, is_extended=is_extended)
-        self.thread.progress_update.connect(self.progress_screen.update_progress)
-        self.thread.log_update.connect(self.progress_screen.append_log)
-        self.thread.calculation_done.connect(self.show_result)
-        self.thread.start()
-
-    def start_prediction_import(self, path_x, path_json, is_extended):
-        self.show_progress_screen()
-
-        self.thread = PredictionCalculationThread(path_x=path_x, path_json=path_json, is_extended=is_extended)
+        self.thread = PredictionCalculationThread(data)
         self.thread.progress_update.connect(self.progress_screen.update_progress)
         self.thread.log_update.connect(self.progress_screen.append_log)
         self.thread.calculation_done.connect(self.show_result)

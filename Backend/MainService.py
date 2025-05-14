@@ -2,15 +2,17 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from Backend.Common.CalculationResult import CalculationResult
+from Backend.Common.InputModelType import InputModelType
 from Backend.Common.InputPredictionData import InputPredictionData
 from Backend.Data.AnalyticsDataProvider import AnalyticsDataProvider
 from Backend.Common.ModelType import ModelType
 from Backend.Common.BestModelIdentifier import BestModelIdentifier
 from Backend.Data.DataProvider import DataProvider
-from Backend.MultipleRegression.MultipleRegressionModel import MultipleRegressionModel
 from Backend.MultipleRegression.MultipleRegressionModelCreator import MultipleRegressionModelCreator
 from Backend.MultipleRegression.MultipleRegressionModelEvaluator import MultipleRegressionModelEvaluator
+from Backend.SystemDynamics.ExtendedSystemDynamicModel import ExtendedSystemDynamicModel
 from Backend.SystemDynamics.ExtendedSystemDynamicModelCreator import ExtendedSystemDynamicModelCreator
+from Backend.SystemDynamics.SystemDynamicModel import SystemDynamicModel
 from Backend.SystemDynamics.SystemDynamicsModelCreator import SystemDynamicModelCreator
 from Backend.SystemDynamics.SystemDynamicsModelEvaluator import SystemDynamicsModelEvaluator
 
@@ -107,16 +109,16 @@ class MainService:
             if log_callback:
                 log_callback(message)
 
-        if data.path_x and data.json_data_path:
-            completed = 0
-            update(completed, "Начинаем загрузку файлов...")
+        completed = 0
+        update(completed, "Начинаем загрузку файлов...")
 
-            X = DataProvider.read_table_file(data.path_x)
-            X.columns = [f"x{i + 1}" for i in range(X.shape[1])]
+        X = DataProvider.read_table_file(data.path_x)
+        X.columns = [f"x{i + 1}" for i in range(X.shape[1])]
 
-            completed = 10
-            update(completed, "Файл с признаками загружен")
+        completed = 10
+        update(completed, "Файл с признаками загружен")
 
+        if data.input_model_type == InputModelType.File:
             model_data = DataProvider.read_json_file(data.json_data_path)
 
             completed = 20
@@ -126,33 +128,34 @@ class MainService:
             completed = 30
             update(completed, "Создание модели...")
 
-            model = MultipleRegressionModelCreator.create_model_from_json(model_data)
+            if data.is_extended:
+                model_creator = ExtendedSystemDynamicModelCreator()
+                model = model_creator.create_from_json(model_data)
 
-            completed = 40
-            update(completed, "Модель создана")
+                completed = 50
+                update(completed, "Модель создана")
+                update(completed, "Начинаем вычислять целевые переменные...")
 
-            completed = 50
-            update(completed, "Начинаем вычислять целевые переменные...")
+                prediction = model.predict(X.iloc[-1], 3)
 
-            prediction = model.predict(X)
+            else:
+                model_creator = SystemDynamicModelCreator()
+                model = model_creator.create_from_json(model_data)
+
+                completed = 50
+                update(completed, "Модель создана")
+                update(completed, "Начинаем вычислять целевые переменные...")
+
+                prediction = model.predict(X)
 
             update(100, "Расчёт завершён")
 
             return CalculationResult(
                 result_df=prediction,
                 model_type=model.model_type.name,
-                equations=model.get_equations())
+                equations=model.get_equation_strings())
 
-        if data.path_x and data.path_coefficients and data.model_type and data.relevant_features:
-            completed = 0
-            update(completed, "Начинаем загрузку файлов...")
-
-            X = DataProvider.read_table_file(data.path_x)
-            X.columns = [f"x{i + 1}" for i in range(X.shape[1])]
-
-            completed = 10
-            update(completed, "Файл с признаками загружен")
-
+        if data.input_model_type == InputModelType.Form:
             coefficients = DataProvider.read_table_file(data.path_coefficients, True)
 
             completed = 20
@@ -162,20 +165,38 @@ class MainService:
             completed = 30
             update(completed, "Создание модели...")
 
-            model = MultipleRegressionModel(coefficients, data.relevant_features, data.model_type)
+            if data.is_extended:
+                model = ExtendedSystemDynamicModel(
+                    model_type=data.model_type,
+                    coefficients=coefficients,
+                    relevant_features=data.relevant_features
+                )
 
-            completed = 40
-            update(completed, "Модель создана")
-            update(completed, "Начинаем вычислять целевые переменные...")
+                completed = 50
+                update(completed, "Модель создана")
+                update(completed, "Начинаем вычислять целевые переменные...")
 
-            prediction = model.predict(X)
+                prediction = model.predict(X.iloc[-1], 3)
+
+            else:
+                model = SystemDynamicModel(
+                    model_type=data.model_type,
+                    coefficients=coefficients,
+                    relevant_features=data.relevant_features
+                )
+
+                completed = 50
+                update(completed, "Модель создана")
+                update(completed, "Начинаем вычислять целевые переменные...")
+
+                prediction = model.predict(X)
 
             update(100, "Расчёт завершён")
 
             return CalculationResult(
                 result_df=prediction,
                 model_type=model.model_type.name,
-                equations=model.get_equations())
+                equations=model.get_equation_strings())
 
     @staticmethod
     def export_to_excel(df: pd.DataFrame, filepath: str = None):

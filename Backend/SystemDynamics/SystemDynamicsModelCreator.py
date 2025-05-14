@@ -40,7 +40,7 @@ class SystemDynamicModelCreator:
             coef_index = X_design.columns
             all_coefficients[target] = pd.Series(coef, index=coef_index)
 
-        coefficients_df = pd.DataFrame(all_coefficients)
+        coefficients_df = pd.DataFrame(all_coefficients).round(4)
 
         return SystemDynamicModel(
             model_type=model_type,
@@ -48,7 +48,7 @@ class SystemDynamicModelCreator:
             relevant_features=relevant_features
         )
 
-    def create_model_from_json(self, data):
+    def create_from_json(self, data):
         model_type = ModelType[data["model_type"]]
         features = data["features"]
         coefficients = pd.DataFrame.from_dict(data["coefficients"], orient="index")

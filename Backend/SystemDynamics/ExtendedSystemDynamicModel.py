@@ -1,5 +1,3 @@
-import json
-
 import numpy as np
 import pandas as pd
 
@@ -47,54 +45,40 @@ class ExtendedSystemDynamicModel:
 
             history.append(pd.Series(new_values))
 
-        return pd.DataFrame(history).reset_index(drop=True)
-
-    def to_json(self, filepath: str) -> None:
-        model_dict = {
-            "model_type": self.model_type,
-            "coefficients": self.coefficients.to_dict(orient="index"),  # сохраняем построчно
-            "relevant_features": self.relevant_features
-        }
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(model_dict, f, ensure_ascii=False, indent=4)
+        return pd.DataFrame(history).reset_index(drop=True).round(4)
 
     def get_equation_strings(self) -> dict:
-        equation_dict = {}
+        equations = {}
 
-        for output_var in self.coefficients.index:
-            coeffs = self.coefficients.loc[output_var]
+        for target in self.coefficients.index:
+            coef_series = self.coefficients.loc[target]
             terms = []
 
-            for input_var, coef in coeffs.items():
-                if coef == 0 or pd.isna(coef):
+            for feature, coef in coef_series.items():
+                if abs(coef) < 1e-8 or feature == target:
                     continue
 
-                formatted_coef = f"{abs(coef):.3f}"
+                formatted_coef = f"{coef:+.4f}"
 
-                if self.model_type == ModelType.Linear:
-                    expr = f"{formatted_coef}*{input_var}(t-1)"
+                if feature == "Intercept":
+                    term = formatted_coef
+                elif self.model_type == ModelType.Linear:
+                    term = f"{formatted_coef}*{feature}(t-1)"
                 elif self.model_type == ModelType.Quadratic:
-                    expr = f"{formatted_coef}*{input_var}(t-1)²"
+                    term = f"{formatted_coef}*{feature}(t-1)²"
                 elif self.model_type == ModelType.Exponential:
-                    expr = f"{formatted_coef}*exp({input_var}(t-1))"
+                    term = f"{formatted_coef}*exp({feature}(t-1))"
                 else:
-                    expr = f"{formatted_coef}*{input_var}(t-1)"  # fallback
+                    term = f"{formatted_coef}*{feature}(t-1)"
 
-                sign = "-" if coef < 0 else "+"
-                terms.append((sign, expr))
+                terms.append(term)
 
-            if terms:
-                first_sign, first_expr = terms[0]
-                equation = f"{output_var}(t) = "
-                equation += f"- {first_expr}" if first_sign == "-" else first_expr
-                for sign, expr in terms[1:]:
-                    equation += f" {sign} {expr}"
-            else:
-                equation = f"{output_var}(t) = 0"
+            equation_body = " ".join(terms)
+            equation = f"{target}(t) = {equation_body.strip()}"
 
-            equation_dict[output_var] = equation
+            equations[target] = equation
 
-        return equation_dict
+        return equations
 
     def to_json(self):
         return {

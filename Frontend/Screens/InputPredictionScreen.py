@@ -1,8 +1,8 @@
-import enum
-
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget, QFileDialog
 
+from Backend.Common.InputModelType import InputModelType
+from Backend.Common.InputPredictionData import InputPredictionData
 from Backend.Common.ModelType import ModelType
 from Frontend.Services.FileType import FileType
 from Frontend.UI.Ui_InputPredictionScreen import Ui_InputPredictionScreen
@@ -10,13 +10,8 @@ from Frontend.Widgets.AddModelConfigurationForm import AddModelConfigurationForm
 from Frontend.Widgets.ImportModelConfigurationWidget import ImportModelConfigurationWidget
 
 
-class InputModelType(enum.Enum):
-    FromFile = 0
-    Add = 1
-
 class InputPredictionScreen(QWidget, Ui_InputPredictionScreen):
-    start_calculation_add = pyqtSignal(str, str, list, ModelType, bool)
-    start_calculation_import = pyqtSignal(str, str, bool)
+    start_calculation = pyqtSignal(InputPredictionData)
     back_to_home = pyqtSignal()
 
     def __init__(self):
@@ -31,8 +26,8 @@ class InputPredictionScreen(QWidget, Ui_InputPredictionScreen):
         self.add_model_conf_widget = AddModelConfigurationForm()
         self.import_model_conf_widget = ImportModelConfigurationWidget()
 
-        self.model_conf_add_btn.clicked.connect(lambda: self._show_add_model_conf(InputModelType.Add))
-        self.model_conf_import_btn.clicked.connect(lambda: self._show_add_model_conf(InputModelType.FromFile))
+        self.model_conf_add_btn.clicked.connect(lambda: self._show_add_model_conf(InputModelType.Form))
+        self.model_conf_import_btn.clicked.connect(lambda: self._show_add_model_conf(InputModelType.File))
 
         self.add_x_path_btn.clicked.connect(self.select_x_file)
         self.calculate_btn.clicked.connect(self.calculate)
@@ -44,36 +39,46 @@ class InputPredictionScreen(QWidget, Ui_InputPredictionScreen):
         self.file_path_x = path
 
     def calculate(self):
-        if self.input_type is InputModelType.FromFile:
+        if self.input_type is InputModelType.File:
             json_path = self.import_model_conf_widget.json_file_path
+
             if json_path and self.file_path_x:
+                data = InputPredictionData(
+                    input_model_type=InputModelType.File,
+                    path_x=self.file_path_x,
+                    json_data_path=json_path
+                )
+
                 if self.sd_simple_rbtn.isChecked():
-                    self.start_calculation_import.emit(self.file_path_x, json_path, False)
+                    data.is_extended = False
                 if self.sd_extended_rbtn.isChecked():
-                    self.start_calculation_import.emit(self.file_path_x, json_path, True)
+                    data.is_extended = True
 
-        if self.input_type is InputModelType.Add:
-            data = self.add_model_conf_widget.get_form_result()
+                self.start_calculation.emit(data)
 
-            if data and self.file_path_x and data.CoefficientFilePath and data.FeaturesList and data.ModelType:
+        if self.input_type is InputModelType.Form:
+            form_data = self.add_model_conf_widget.get_form_result()
+
+            if (form_data
+                    and self.file_path_x
+                    and form_data.CoefficientFilePath
+                    and form_data.FeaturesList
+                    and form_data.ModelType):
+
+                data = InputPredictionData(
+                    input_model_type=InputModelType.Form,
+                    path_x=self.file_path_x,
+                    path_coefficients=form_data.CoefficientFilePath,
+                    relevant_features=form_data.FeaturesList,
+                    model_type=form_data.ModelType
+                )
+
                 if self.sd_simple_rbtn.isChecked():
-                    self.start_calculation_add.emit(
-                        self.file_path_x,
-                        data.CoefficientFilePath,
-                        data.FeaturesList,
-                        data.ModelType,
-                        False
-                    )
-
+                    data.is_extended = False
                 if self.sd_extended_rbtn.isChecked():
-                    self.start_calculation_add.emit(
-                        self.file_path_x,
-                        data.CoefficientFilePath,
-                        data.FeaturesList,
-                        data.ModelType,
-                        True
-                    )
+                    data.is_extended = True
 
+                self.start_calculation.emit(data)
 
     def _open_file_dialog(self, file_types: str):
         file_name, _ = QFileDialog.getOpenFileName(
@@ -86,18 +91,18 @@ class InputPredictionScreen(QWidget, Ui_InputPredictionScreen):
             return file_name
 
     def _show_add_model_conf(self, type: InputModelType):
-        if type is InputModelType.Add:
+        if type is InputModelType.Form:
             self.model_config_layout.removeWidget(self.import_model_conf_widget)
             self.import_model_conf_widget.hide()
             self.model_config_layout.addWidget(self.add_model_conf_widget)
             self.add_model_conf_widget.show()
 
-            self.input_type = InputModelType.Add
+            self.input_type = InputModelType.Form
 
-        if type is InputModelType.FromFile:
+        if type is InputModelType.File:
             self.model_config_layout.removeWidget(self.add_model_conf_widget)
             self.add_model_conf_widget.hide()
             self.model_config_layout.addWidget(self.import_model_conf_widget)
             self.import_model_conf_widget.show()
 
-            self.input_type = InputModelType.FromFile
+            self.input_type = InputModelType.File

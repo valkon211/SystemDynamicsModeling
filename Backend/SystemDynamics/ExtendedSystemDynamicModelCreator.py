@@ -38,7 +38,7 @@ class ExtendedSystemDynamicModelCreator:
 
             coeffs = self._fit_equation(y, X, model_type)
             coeffs.name = target
-            coeffs = coeffs.round(3)
+            coeffs = coeffs.round(4)
             coeffs[coeffs.abs() < 0.0005] = 0.0
             coefficient_rows.append(coeffs)
 

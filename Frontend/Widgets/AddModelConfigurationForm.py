@@ -31,7 +31,7 @@ class AddModelConfigurationForm(QWidget, Ui_AddModelConfigurationForm):
         if features_text == "":
             return []
 
-        return features_text.split(',')
+        return [x.strip() for x in features_text.split()]
 
     def _get_model_type(self):
         if self.func_lin_rbtn.isChecked():

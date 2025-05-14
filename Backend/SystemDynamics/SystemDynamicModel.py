@@ -16,7 +16,7 @@ class SystemDynamicModel:
         self.relevant_features = relevant_features
 
     def predict(self, df: pd.DataFrame) -> pd.DataFrame:
-        X = df[self.relevant_features].copy()
+        X = df.copy()
 
         if self.model_type == ModelType.Linear:
             X_design = self._build_linear_matrix(X)
@@ -26,6 +26,8 @@ class SystemDynamicModel:
             X_design = self._build_linear_matrix(X)
         else:
             raise ValueError(f"Неизвестный тип модели: {self.model_type}")
+
+        X_design = X_design[self.relevant_features]
 
         predictions = pd.DataFrame(index=X.index)
 
@@ -42,7 +44,7 @@ class SystemDynamicModel:
 
             predictions[target] = y_pred
 
-        return predictions
+        return predictions.round(4)
 
     def get_equation_strings(self) -> dict[str, str]:
         equations = {}
@@ -56,10 +58,7 @@ class SystemDynamicModel:
                     continue
 
                 if feature == "Intercept":
-                    term = f"{coef:.4f}"
-                elif self.model_type == ModelType.Quadratic and feature.endswith("²"):
-                    original_feature = feature[:-1]  # убираем последний символ "²"
-                    term = f"{coef:+.4f} * {original_feature}²"
+                    term = f"{coef:+.4f}"
                 else:
                     term = f"{coef:+.4f} * {feature}"
 
