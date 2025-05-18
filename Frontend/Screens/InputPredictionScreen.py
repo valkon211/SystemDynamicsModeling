@@ -69,7 +69,6 @@ class InputPredictionScreen(QWidget, Ui_InputPredictionScreen):
                     input_model_type=InputModelType.Form,
                     path_x=self.file_path_x,
                     path_coefficients=form_data.CoefficientFilePath,
-                    relevant_features=form_data.FeaturesList,
                     model_type=form_data.ModelType
                 )
 

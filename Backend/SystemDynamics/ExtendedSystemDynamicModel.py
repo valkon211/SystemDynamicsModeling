@@ -8,44 +8,46 @@ class ExtendedSystemDynamicModel:
     def __init__(
             self,
             model_type: ModelType,
-            coefficients: pd.DataFrame,  # Индекс — зависимая переменная, колонки — независимые + intercept
-            relevant_features: dict[str, list[str]]
-            # для каждой зависимой переменной — список фич, от которых она зависит
+            coefficients: pd.DataFrame  # Индекс — зависимая переменная, колонки — независимые + intercept
     ):
         self.model_type = model_type
         self.coefficients = coefficients
-        self.relevant_features = relevant_features
 
     def predict(self, initial_values: pd.Series, steps: int) -> pd.DataFrame:
-        history = [initial_values.copy()]
-        variables = list(self.coefficients.index)
+        current_state = initial_values.copy()
+        history = [current_state.copy()]
+        targets = list(self.coefficients.index)
 
         for _ in range(steps):
-            prev = history[-1].copy()
             new_values = {}
 
-            for var in variables:
-                inputs = self.relevant_features[var]
-                coeffs = self.coefficients.loc[var]
-                intercept = coeffs.get("Intercept", 0)
+            for target in targets:
+                coeffs = self.coefficients.loc[target]
+                intercept = coeffs.get("Intercept", 0.0)
 
-                x = np.array([prev[f] for f in inputs])
-                w = np.array([coeffs[f] for f in inputs])
+                value = intercept
 
-                if self.model_type == ModelType.Linear:
-                    value = intercept + np.dot(w, x)
-                elif self.model_type == ModelType.Quadratic:
-                    value = intercept + np.dot(w, x ** 2)
-                elif self.model_type == ModelType.Quadratic:
-                    value = intercept + np.dot(w, np.exp(x))
-                else:
-                    raise ValueError(f"Неизвестный тип модели: {self.model_type}")
+                for feature, weight in coeffs.items():
+                    if feature == "Intercept" or np.isclose(weight, 0.0):
+                        continue
 
-                new_values[var] = value
+                    if feature.endswith("²"):
+                        base_name = feature.replace("²", "")
+                        val = current_state.get(base_name, 0.0) ** 2
+                    elif self.model_type == ModelType.Exponential:
+                        val = np.exp(current_state.get(feature, 0.0))
+                    else:
+                        val = current_state.get(feature, 0.0)
 
-            history.append(pd.Series(new_values))
+                    value += weight * val
 
-        return pd.DataFrame(history).reset_index(drop=True).round(4)
+                new_values[target] = value
+
+            current_state = current_state.copy()
+            current_state.update(pd.Series(new_values))
+            history.append(current_state.copy())
+
+        return pd.DataFrame(history)[self.coefficients.index].reset_index(drop=True).round(4)
 
     def get_equation_strings(self) -> dict:
         equations = {}
@@ -62,10 +64,8 @@ class ExtendedSystemDynamicModel:
 
                 if feature == "Intercept":
                     term = formatted_coef
-                elif self.model_type == ModelType.Linear:
+                elif self.model_type == ModelType.Linear or self.model_type == ModelType.Quadratic:
                     term = f"{formatted_coef}*{feature}(t-1)"
-                elif self.model_type == ModelType.Quadratic:
-                    term = f"{formatted_coef}*{feature}(t-1)²"
                 elif self.model_type == ModelType.Exponential:
                     term = f"{formatted_coef}*exp({feature}(t-1))"
                 else:
@@ -83,6 +83,5 @@ class ExtendedSystemDynamicModel:
     def to_json(self):
         return {
             "model_type": self.model_type.name,
-            "features": self.relevant_features,
             "coefficients": self.coefficients.to_dict(orient="index")  # строки — переменные
         }

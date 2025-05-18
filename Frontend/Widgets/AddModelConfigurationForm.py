@@ -9,7 +9,6 @@ from Frontend.UI.Ui_AddModelConfigurationForm import Ui_AddModelConfigurationFor
 @dataclass
 class AddModelFormResult:
     CoefficientFilePath: None
-    FeaturesList: None
     ModelType: None
 
 class AddModelConfigurationForm(QWidget, Ui_AddModelConfigurationForm):
@@ -22,16 +21,8 @@ class AddModelConfigurationForm(QWidget, Ui_AddModelConfigurationForm):
     def get_form_result(self):
         return AddModelFormResult(
             CoefficientFilePath=self.coefficients_le.text(),
-            FeaturesList=self._get_features(),
-            ModelType=self._get_model_type() )
-
-    def _get_features(self) -> list[str]:
-        features_text = self.features_le.text()
-
-        if features_text == "":
-            return []
-
-        return [x.strip() for x in features_text.split()]
+            ModelType=self._get_model_type()
+        )
 
     def _get_model_type(self):
         if self.func_lin_rbtn.isChecked():

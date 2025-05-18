@@ -23,14 +23,6 @@ class Ui_AddModelConfigurationForm(object):
         self.features_layout = QtWidgets.QHBoxLayout()
         self.features_layout.setSpacing(10)
 
-        self.features_lbl = QtWidgets.QLabel(self.main_widget)
-        self.features_lbl.setObjectName("features_lbl")
-        self.features_layout.addWidget(self.features_lbl)
-
-        self.features_le = QtWidgets.QLineEdit(self.main_widget)
-        self.features_le.setObjectName("features_le")
-        self.features_layout.addWidget(self.features_le)
-
         self.model_conf_form_layout.addLayout(self.features_layout)
 
         # Ввод коэффициентов
@@ -83,7 +75,6 @@ class Ui_AddModelConfigurationForm(object):
         _translate = QtCore.QCoreApplication.translate
         form.setWindowTitle(_translate("form", "Form"))
         self.add_coef_path_btn.setText(_translate("form", "Выбрать..."))
-        self.features_lbl.setText(_translate("form", "Релевантные признаки:"))
         self.coefficients_lbl.setText(_translate("form", "Файл с коэффициентами:"))
         self.function_lbl.setText(_translate("form", "Функция:"))
         self.func_lin_rbtn.setText(_translate("form", "Линейная"))

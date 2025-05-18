@@ -5,29 +5,26 @@ from Backend.Common.ModelEvaluator import ModelEvaluator
 
 
 class SystemDynamicsModelEvaluator(ModelEvaluator):
-    def evaluate(self, true_series: pd.Series, pred_series: pd.Series) -> pd.DataFrame:
+    def evaluate(self, true_df: pd.DataFrame, pred_df: pd.DataFrame) -> pd.DataFrame:
         mae_total = 0
         wape_total = 0
         r2_total = 0
-        n_targets = true_series.shape[0]
+        n_targets = true_df.shape[1]
 
-        data = pd.concat([true_series, pred_series], axis=1)
-        data.columns = ['true', 'pred']
+        for column in true_df.columns:
+            y_true = true_df[column]
+            y_pred = pred_df[column]
 
-        for _, row in data.iterrows():
-            y_true = row['true']
-            y_pred = row['pred']
-
-            mae = self.mean_absolute_error(pd.Series([y_true]), pd.Series([y_pred]))
-            wape = self.wape(pd.Series([y_true]), pd.Series([y_pred]))
-            r2 = self.r2_score(pd.Series([y_true]), pd.Series([y_pred]))
+            mae = self.mean_absolute_error(y_true, y_pred)
+            wape = self.wape(y_true, y_pred)
+            r2 = self.r2_score(y_true, y_pred)
 
             mae_total += mae
             wape_total += wape
             r2_total += r2
 
-        mae_total /= n_targets
-        wape_total /= n_targets
-        r2_total /= n_targets
+        mae_result = np.round(mae_total, 4) / n_targets
+        wape_result = np.round(wape_total, 4) / n_targets
+        r2_result = np.round(r2_total, 4) / n_targets
 
-        return pd.DataFrame([[mae_total, wape_total, r2_total]], columns=["MAE", "WAPE", "R²"]).round(4)
+        return pd.DataFrame([[mae_result, wape_result, r2_result]], columns=["MAE", "WAPE", "R²"]).round(4)

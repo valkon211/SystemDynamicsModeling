@@ -16,43 +16,51 @@ class SystemDynamicModelCreator:
         model_type: ModelType,
         relevant_features: list[str]
     ) -> SystemDynamicModel:
-        X_lagged, y_lagged = self._prepare_lagged_data(features_df, targets_df, relevant_features)
+        X_lagged, y_lagged = self._prepare_lagged_data(features_df, targets_df)
 
+        all_feature_names = list(features_df.columns)
         all_coefficients = {}
 
         for target in y_lagged.columns:
-            X = X_lagged.copy()
+            X = X_lagged[relevant_features].copy()
             y = y_lagged[target].values
 
-            # Расширим X в зависимости от типа модели
+            # Построение дизайн-матрицы с только релевантными переменными
             if model_type == ModelType.Linear:
                 X_design = self._build_linear_matrix(X)
+                full_X_design = self._build_linear_matrix(features_df[all_feature_names].copy())
             elif model_type == ModelType.Quadratic:
                 X_design = self._build_quadratic_matrix(X)
+                full_X_design = self._build_quadratic_matrix(features_df[all_feature_names].copy())
             elif model_type == ModelType.Exponential:
                 X_design = self._build_linear_matrix(X)
-                y = np.log(y + 1e-8)  # логарифмирование, избегаем log(0)
+                full_X_design = self._build_linear_matrix(features_df[all_feature_names].copy())
+                y = np.log(y + 1e-8)
             else:
                 raise ValueError(f"Неизвестный тип модели: {model_type}")
 
-            # Вычисление коэффициентов по формуле нормального уравнения
+            # Вычисляем коэффициенты только по релевантным признакам
             coef = np.linalg.lstsq(X_design, y, rcond=None)[0]
-            coef_index = X_design.columns
-            all_coefficients[target] = pd.Series(coef, index=coef_index)
+            partial_coef_series = pd.Series(coef, index=X_design.columns)
+
+            # Обнуляем коэффициенты нерелевантных признаков, создавая полную серию
+            full_coef_series = pd.Series(0.0, index=full_X_design.columns)
+            full_coef_series.update(partial_coef_series)
+
+            all_coefficients[target] = full_coef_series
 
         coefficients_df = pd.DataFrame(all_coefficients).round(4)
 
         return SystemDynamicModel(
             model_type=model_type,
-            coefficients=coefficients_df,
-            relevant_features=relevant_features
+            coefficients=coefficients_df
         )
 
     def create_from_json(self, data):
         model_type = ModelType[data["model_type"]]
         features = data["features"]
         coefficients = pd.DataFrame.from_dict(data["coefficients"], orient="index")
-        coefficients.index.name = None  # очистим имя индекса, если оно установлено
+        coefficients.index.name = None
 
         return SystemDynamicModel(
             coefficients=coefficients,
@@ -63,13 +71,9 @@ class SystemDynamicModelCreator:
         self,
         features_df: pd.DataFrame,
         targets_df: pd.DataFrame,
-        relevant_features: list[str]
     ) -> (pd.DataFrame, pd.DataFrame):
-        X = features_df[relevant_features].copy()
-        X_lagged = X.shift(self.lag)
+        X_lagged = features_df.shift(self.lag)
         y_lagged = targets_df
-
-        # Очищаем от пропусков
         mask = (~X_lagged.isna().any(axis=1)) & (~y_lagged.isna().any(axis=1))
         return X_lagged[mask], y_lagged[mask]
 

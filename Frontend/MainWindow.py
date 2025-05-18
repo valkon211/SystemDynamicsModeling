@@ -52,10 +52,19 @@ class MainWindow(QMainWindow):
         self.input_calculation_screen.file_path_y_le.clear()
         self.input_calculation_screen.file_path_x = ""
         self.input_calculation_screen.file_path_y = ""
+        self.input_calculation_screen.sd_simple_rbtn.setChecked(False)
+        self.input_calculation_screen.sd_extended_rbtn.setChecked(False)
 
     def reset_input_prediction_screen(self):
         self.input_prediction_screen.file_path_x_le.clear()
         self.input_prediction_screen.file_path_x = ""
+        self.input_prediction_screen.add_model_conf_widget.coefficients_le.clear()
+        self.input_prediction_screen.add_model_conf_widget.func_lin_rbtn.setChecked(False)
+        self.input_prediction_screen.add_model_conf_widget.func_exp_rbtn.setChecked(False)
+        self.input_prediction_screen.add_model_conf_widget.func_quadro_rbtn.setChecked(False)
+        self.input_prediction_screen.import_model_conf_widget.file_path_model_le.clear()
+        self.input_prediction_screen.sd_simple_rbtn.setChecked(False)
+        self.input_prediction_screen.sd_extended_rbtn.setChecked(False)
 
     def reset_progress_screen(self):
         self.progress_screen.log_te.clear()
@@ -63,7 +72,6 @@ class MainWindow(QMainWindow):
 
     def reset_result_screen(self):
         self.result_screen.table_result.clear()
-        self.result_screen.relevant_features_le.clear()
         self.result_screen.equations_te.clear()
 
     def show_home_screen(self):

@@ -23,7 +23,6 @@ class ResultScreen(QWidget, Ui_ResultScreen):
         self.data = data
 
         self._set_func_name(data.model_type)
-        self._set_relevant_features(data.relevant_features)
         self._set_equations(data.equations)
         self._set_dataframe(data.result_df)
 
@@ -32,10 +31,6 @@ class ResultScreen(QWidget, Ui_ResultScreen):
 
     def _set_func_name(self, name):
         self.result_lbl.setText(name)
-
-    def _set_relevant_features(self, features: list[str]):
-        if features:
-            self.relevant_features_le.setText(', '.join(features))
 
     def _set_equations(self, equations: dict[str, str]):
         for equation in equations.values():

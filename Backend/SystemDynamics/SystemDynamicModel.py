@@ -9,11 +9,9 @@ class SystemDynamicModel:
         self,
         model_type: ModelType,
         coefficients: pd.DataFrame,
-        relevant_features: list[str]
     ):
         self.model_type = model_type
-        self.coefficients = coefficients  # DataFrame: index=features, columns=targets
-        self.relevant_features = relevant_features
+        self.coefficients = coefficients
 
     def predict(self, df: pd.DataFrame) -> pd.DataFrame:
         X = df.copy()
@@ -27,14 +25,12 @@ class SystemDynamicModel:
         else:
             raise ValueError(f"Неизвестный тип модели: {self.model_type}")
 
-        X_design = X_design[self.relevant_features]
-
         predictions = pd.DataFrame(index=X.index)
 
         for target in self.coefficients.columns:
             coeffs = self.coefficients[target]
 
-            # Подгоняем под порядок коэффициентов
+            # Выравнивание по всем возможным признакам, пропущенные — 0
             X_aligned = X_design.reindex(columns=coeffs.index, fill_value=0)
 
             y_pred = X_aligned.values @ coeffs.values

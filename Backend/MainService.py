@@ -71,12 +71,11 @@ class MainService:
 
         if is_extended:
             sd_creator = ExtendedSystemDynamicModelCreator()
-            sd_model = sd_creator.create(features, targets, best_type)
+            sd_model = sd_creator.create(features, targets, best_type, best_mr_model.features[:-1])
 
             data = pd.concat([X_test, y_test], axis=1)
             sd_prediction = sd_model.predict(data.iloc[0], 1)
-            sd_eval_result = sd_evaluator.evaluate(data.iloc[1], sd_prediction.iloc[1])
-
+            sd_eval_result = sd_evaluator.evaluate(data.iloc[:2], sd_prediction)
             print(sd_eval_result)
 
             update(100, "Расчёт завершён")
@@ -84,20 +83,22 @@ class MainService:
             return CalculationResult(
                 result_df= sd_model.coefficients,
                 model_type= sd_model.model_type.name,
-                relevant_features= None,
                 equations = sd_model.get_equation_strings(),
                 json_data= sd_model.to_json())
 
         else:
             sd_creator = SystemDynamicModelCreator()
-            sd_model = sd_creator.create(features, targets, best_type, best_mr_model.features)
+            sd_model = sd_creator.create(features, targets, best_type, best_mr_model.features[:-1])
+
+            sd_prediction = sd_model.predict(X_test)
+            sd_eval_result = sd_evaluator.evaluate(y_test, sd_prediction)
+            print(sd_eval_result)
 
             update(100, "Расчёт завершён")
 
             return CalculationResult(
                 result_df=sd_model.coefficients,
                 model_type=sd_model.model_type.name,
-                relevant_features=sd_model.relevant_features,
                 equations=sd_model.get_equation_strings(),
                 json_data=sd_model.to_json())
 
@@ -136,7 +137,7 @@ class MainService:
                 update(completed, "Модель создана")
                 update(completed, "Начинаем вычислять целевые переменные...")
 
-                prediction = model.predict(X.iloc[-1], 3)
+                prediction = model.predict(X.iloc[-1], 1)
 
             else:
                 model_creator = SystemDynamicModelCreator()
@@ -168,21 +169,19 @@ class MainService:
             if data.is_extended:
                 model = ExtendedSystemDynamicModel(
                     model_type=data.model_type,
-                    coefficients=coefficients,
-                    relevant_features=data.relevant_features
+                    coefficients=coefficients
                 )
 
                 completed = 50
                 update(completed, "Модель создана")
                 update(completed, "Начинаем вычислять целевые переменные...")
 
-                prediction = model.predict(X.iloc[-1], 3)
+                prediction = model.predict(X.iloc[-1], 1)
 
             else:
                 model = SystemDynamicModel(
                     model_type=data.model_type,
-                    coefficients=coefficients,
-                    relevant_features=data.relevant_features
+                    coefficients=coefficients
                 )
 
                 completed = 50
