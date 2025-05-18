@@ -85,7 +85,5 @@ class SystemDynamicModel:
     def to_json(self):
         return {
             "model_type": self.model_type.name,
-            "features": list(self.coefficients.index),
             "coefficients": self.coefficients.to_dict(orient="index")
         }
-

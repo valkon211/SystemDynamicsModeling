@@ -80,6 +80,6 @@ class ExtendedSystemDynamicModelCreator:
         coefficients.index.name = None
 
         return ExtendedSystemDynamicModel(
-            model_type=data["model_type"],
+            model_type=ModelType[data["model_type"]],
             coefficients=coefficients
         )

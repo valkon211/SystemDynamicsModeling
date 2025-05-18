@@ -10,7 +10,7 @@ from Backend.MultipleRegression.MultipleRegressionModel import MultipleRegressio
 class MultipleRegressionModelCreator:
     @staticmethod
     def create_model(X: pd.DataFrame, y: pd.DataFrame, model_type: ModelType) -> MultipleRegressionModel:
-        relevant_features = FeatureEngineer.select_relevant_features(X)
+        relevant_features = FeatureEngineer.select_relevant_features(X, y)
         X_selected = X[relevant_features]
         X_transformed = AnalyticsDataPreparer.transform_x(X_selected, model_type)
 

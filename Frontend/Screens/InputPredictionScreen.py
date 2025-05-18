@@ -62,7 +62,6 @@ class InputPredictionScreen(QWidget, Ui_InputPredictionScreen):
             if (form_data
                     and self.file_path_x
                     and form_data.CoefficientFilePath
-                    and form_data.FeaturesList
                     and form_data.ModelType):
 
                 data = InputPredictionData(

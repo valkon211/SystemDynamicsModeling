@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from Backend.Common.CalculationResult import CalculationResult
+from Backend.Common.FeatureEngineer import FeatureEngineer
 from Backend.Common.InputModelType import InputModelType
 from Backend.Common.InputPredictionData import InputPredictionData
 from Backend.Data.AnalyticsDataProvider import AnalyticsDataProvider
@@ -65,13 +66,16 @@ class MainService:
         best_type = best_model_ident.determine_best_model(mr_evaluator.evaluate_models(y_test, mr_predictions))
         best_mr_model = mr_models[best_type]
 
-        completed = 60
+        relevant_features = (
+            FeatureEngineer.select_relevant_features_after_regression(X_train, y_train, best_mr_model.coefficients))
+
+        completed = 70
         update(completed, f"Анализ моделей множественной регрессии завершён.")
         update(completed, f"Начинаем построение модели системной динамики.")
 
         if is_extended:
             sd_creator = ExtendedSystemDynamicModelCreator()
-            sd_model = sd_creator.create(features, targets, best_type, best_mr_model.features[:-1])
+            sd_model = sd_creator.create(features, targets, best_type, relevant_features)
 
             data = pd.concat([X_test, y_test], axis=1)
             sd_prediction = sd_model.predict(data.iloc[0], 1)
@@ -88,7 +92,7 @@ class MainService:
 
         else:
             sd_creator = SystemDynamicModelCreator()
-            sd_model = sd_creator.create(features, targets, best_type, best_mr_model.features[:-1])
+            sd_model = sd_creator.create(features, targets, best_type, relevant_features)
 
             sd_prediction = sd_model.predict(X_test)
             sd_eval_result = sd_evaluator.evaluate(y_test, sd_prediction)
@@ -114,7 +118,6 @@ class MainService:
         update(completed, "Начинаем загрузку файлов...")
 
         X = DataProvider.read_table_file(data.path_x)
-        X.columns = [f"x{i + 1}" for i in range(X.shape[1])]
 
         completed = 10
         update(completed, "Файл с признаками загружен")

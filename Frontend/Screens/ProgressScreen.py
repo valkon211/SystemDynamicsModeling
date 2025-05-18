@@ -11,7 +11,7 @@ class ProgressScreen(QWidget, Ui_ProgressScreen):
         self.setupUi(self)
 
     def update_progress(self, value):
-        time.sleep(1)
+        #time.sleep(1)
         self.progressBar.setValue(value)
 
     def append_log(self, message):

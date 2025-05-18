@@ -57,15 +57,12 @@ class SystemDynamicModelCreator:
         )
 
     def create_from_json(self, data):
-        model_type = ModelType[data["model_type"]]
-        features = data["features"]
         coefficients = pd.DataFrame.from_dict(data["coefficients"], orient="index")
         coefficients.index.name = None
 
         return SystemDynamicModel(
             coefficients=coefficients,
-            model_type=model_type,
-            relevant_features=features)
+            model_type=ModelType[data["model_type"]])
 
     def _prepare_lagged_data(
         self,
