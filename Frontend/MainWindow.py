@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
             self.window = QMainWindow()
             self.window.setCentralWidget(self.rules_widget)
             self.window.setWindowTitle("Правила использования")
-            self.window.resize(500, 720)
+            self.window.resize(700, 720)
 
         self.window.show()
         self.window.raise_()  # Поднимает окно наверх

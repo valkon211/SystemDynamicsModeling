@@ -37,5 +37,4 @@ class MultipleRegressionModelEvaluator(ModelEvaluator):
             model_names.append(model_name)
 
         metrics_df = pd.DataFrame(results, index=model_names)
-        print("\n", metrics_df)
         return metrics_df

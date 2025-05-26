@@ -77,11 +77,6 @@ class MainService:
             sd_creator = ExtendedSystemDynamicModelCreator()
             sd_model = sd_creator.create(features, targets, best_type, relevant_features)
 
-            data = pd.concat([X_test, y_test], axis=1)
-            sd_prediction = sd_model.predict(data.iloc[0], 1)
-            sd_eval_result = sd_evaluator.evaluate(data.iloc[:2], sd_prediction)
-            print(sd_eval_result)
-
             update(100, "Расчёт завершён")
 
             return CalculationResult(
@@ -93,10 +88,6 @@ class MainService:
         else:
             sd_creator = SystemDynamicModelCreator()
             sd_model = sd_creator.create(features, targets, best_type, relevant_features)
-
-            sd_prediction = sd_model.predict(X_test)
-            sd_eval_result = sd_evaluator.evaluate(y_test, sd_prediction)
-            print(sd_eval_result)
 
             update(100, "Расчёт завершён")
 
@@ -207,42 +198,3 @@ class MainService:
     @staticmethod
     def export_to_json(data, filepath: str = None):
         DataProvider.save_to_json(data, filepath)
-
-
-
-if __name__ == '__main__':
-    features_path = ""
-    targets_path = ""
-
-    best_model_ident = BestModelIdentifier()
-    mr_evaluator = MultipleRegressionModelEvaluator()
-    sd_creator = SystemDynamicModelCreator()
-    sd_evaluator = SystemDynamicsModelEvaluator()
-
-    analytics_data = AnalyticsDataProvider(features_path, targets_path)
-    features = analytics_data.get_facts()
-    targets = analytics_data.get_targets()
-
-    X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, random_state=42)
-
-    mr_predictions = {}
-    mr_models = {}
-    for model_type in ModelType:
-        mr_model = MultipleRegressionModelCreator.create_model(X_train, y_train, model_type)
-        prediction = mr_model.predict(X_test)
-
-        mr_models[model_type] = mr_model
-        mr_predictions[model_type] = prediction
-
-    best_type = best_model_ident.determine_best_model(mr_evaluator.evaluate_models(y_test, mr_predictions))
-    best_mr_model = mr_models[best_type]
-
-    print("best model type:\t", best_type)
-    print("features:\t", best_mr_model.features)
-    print("coefficients:\n", best_mr_model.coefficients)
-
-    sd_model = sd_creator.create(X_train, y_train, best_type, best_mr_model.features)
-
-    sd_prediction = sd_model.predict(X_test)
-
-    print(sd_evaluator.evaluate(y_test, sd_prediction))
